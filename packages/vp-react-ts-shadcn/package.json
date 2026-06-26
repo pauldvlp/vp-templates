@@ -1,9 +1,15 @@
 {
   "name": "@pauldvlp/vp-react-ts-shadcn",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Vite+ monorepo template: one frontend app (website) + a shared shadcn UI package, themeable via shadcn presets.",
   "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
   "homepage": "https://github.com/pauldvlp/vp-templates",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pauldvlp/vp-templates.git",
+    "directory": "packages/vp-react-ts-shadcn"
+  },
+  "bugs": "https://github.com/pauldvlp/vp-templates/issues",
   "keywords": [
     "vite-plus-generator",
     "vite-plus",

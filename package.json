@@ -6,6 +6,11 @@
   "description": "Monorepo of pauldvlp's Vite+ templates and generators, indexed by @pauldvlp/create.",
   "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
   "homepage": "https://github.com/pauldvlp/vp-templates",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pauldvlp/vp-templates.git"
+  },
+  "bugs": "https://github.com/pauldvlp/vp-templates/issues",
   "scripts": {
     "build": "pnpm -r run build",
     "smoke": "node scripts/smoke.mjs",

@@ -1,9 +1,15 @@
 {
   "name": "@pauldvlp/create",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "pauldvlp's Vite+ project templates, usable via `vp create @pauldvlp`.",
   "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
   "homepage": "https://github.com/pauldvlp/vp-templates",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pauldvlp/vp-templates.git",
+    "directory": "packages/create"
+  },
+  "bugs": "https://github.com/pauldvlp/vp-templates/issues",
   "type": "module",
   "keywords": [
     "vite-plus",
