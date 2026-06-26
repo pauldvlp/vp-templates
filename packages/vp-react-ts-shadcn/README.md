@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pauldvlp/vp-templates/main/assets/cover.webp" alt="@pauldvlp/vp-templates" width="100%" />
+</p>
+
 # @pauldvlp/vp-react-ts-shadcn
 
 A [Vite+](https://viteplus.dev) **monorepo generator** that scaffolds a minimal front-end workspace:
@@ -15,10 +19,10 @@ Published under the [`@pauldvlp/create`](../create) manifest:
 
 ```bash
 # Interactive (prompts for anything you don't pass)
-vp create @pauldvlp:react-ts-shadcn
+vp create @pauldvlp:vp-react-ts-shadcn
 
 # Non-interactive, fully specified
-vp create @pauldvlp:react-ts-shadcn -- \
+vp create @pauldvlp:vp-react-ts-shadcn -- \
   --name my-app --scope @acme --base base --preset vega --iconLibrary lucide --components button,card,dialog
 ```
 

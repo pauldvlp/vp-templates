@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pauldvlp/vp-templates/main/assets/cover.webp" alt="@pauldvlp/vp-templates" width="100%" />
+</p>
+
 # @pauldvlp/create
 
 The org manifest for [`@pauldvlp/vp-templates`](../../). `vp create @pauldvlp` reads the
