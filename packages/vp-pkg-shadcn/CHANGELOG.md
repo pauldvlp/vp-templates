@@ -1,5 +1,11 @@
 # @pauldvlp/vp-pkg-shadcn
 
+## 0.4.1
+
+### Patch Changes
+
+- 5717203: Add MIT license: include a `LICENSE` file in each published package and set `"license": "MIT"` in package metadata (previously `UNLICENSED`).
+
 ## 0.4.0
 
 First release. All `@pauldvlp` template packages were aligned to a shared `0.4.0` baseline here; they
