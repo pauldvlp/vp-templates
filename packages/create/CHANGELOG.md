@@ -1,5 +1,11 @@
 # @pauldvlp/create
 
+## 0.4.1
+
+### Patch Changes
+
+- 5717203: Add MIT license: include a `LICENSE` file in each published package and set `"license": "MIT"` in package metadata (previously `UNLICENSED`).
+
 ## 0.4.0
 
 Aligned to the shared `0.4.0` baseline of the `@pauldvlp` template suite (previously `0.1.2`).
