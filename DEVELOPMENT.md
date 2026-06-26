@@ -103,6 +103,24 @@ A typical loop: edit → `pnpm changeset` → commit → when ready, `pnpm versi
 
 See the [root README](./README.md) for the naming convention.
 
+### Shared logic — `@pauldvlp/template-kit`
+
+Logic common to the generators (file-tree building, shadcn `components.json`, `ICON_LIBS`, the
+`catalog:` resolver, shadcn `init` flags) lives in the **private** `@pauldvlp/template-kit` package.
+It is never published — each generator inlines it into its own `dist`. The mechanism: add it as a
+`workspace:*` devDependency (so `node bin/index.ts` and `pnpm smoke` resolve it), and add a
+`tsconfig.json` `paths` entry pointing at its **source**:
+
+```jsonc
+"baseUrl": ".",
+"paths": { "@pauldvlp/template-kit": ["../template-kit/src/index.ts"] }
+```
+
+esbuild reads that `paths` entry and bundles the kit inline — tsconfig `paths` matches are exempt
+from `--packages=external`, so the published bundle is self-contained with no bare `@pauldvlp/template-kit`
+import. Adding a `catalog:`-resolving "into an existing repo" generator? Reuse `resolveCatalogDeps`
+and keep `CATALOG` in `template-kit/src/index.ts` in sync with the template `pnpm-workspace.yaml`.
+
 ## Publishing checklist
 
 - [ ] `pnpm smoke` passes

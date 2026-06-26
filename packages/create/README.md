@@ -11,13 +11,15 @@ The org manifest for [`@pauldvlp/vp-templates`](../../). `vp create @pauldvlp` r
 vp create @pauldvlp                     # interactive picker
 vp create @pauldvlp:vp-react-ts-shadcn  # run an entry directly, forwarding options after --
 vp create @pauldvlp:vp-react-ts-shadcn -- --name my-app --base base --preset vega
+vp create @pauldvlp:vp-pkg-shadcn       # add packages/ui into an existing repo
 ```
 
 ## Entries
 
-| Entry                | Template (npm package)         | New project? | Description                                    |
-| -------------------- | ------------------------------ | ------------ | ---------------------------------------------- |
-| `vp-react-ts-shadcn` | `@pauldvlp/vp-react-ts-shadcn` | yes          | Vite+ monorepo: website app + shared shadcn UI |
+| Entry                | Template (npm package)         | New project? | Description                                          |
+| -------------------- | ------------------------------ | ------------ | ---------------------------------------------------- |
+| `vp-react-ts-shadcn` | `@pauldvlp/vp-react-ts-shadcn` | yes          | Vite+ monorepo: website app + shared shadcn UI       |
+| `vp-pkg-shadcn`      | `@pauldvlp/vp-pkg-shadcn`      | no           | Add a shared shadcn UI package into an existing repo |
 
 To add an entry: publish the generator package, then append `{ name, description, template, monorepo? }`
 to `createConfig.templates`, bump the version, and republish this package. `monorepo: true` marks a

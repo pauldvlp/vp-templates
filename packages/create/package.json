@@ -1,6 +1,6 @@
 {
   "name": "@pauldvlp/create",
-  "version": "0.1.2",
+  "version": "0.4.0",
   "description": "pauldvlp's Vite+ project templates, usable via `vp create @pauldvlp`.",
   "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
   "homepage": "https://github.com/pauldvlp/vp-templates",
@@ -23,6 +23,11 @@
         "description": "Vite+ monorepo — website app + shared shadcn UI package (themeable via shadcn presets)",
         "template": "@pauldvlp/vp-react-ts-shadcn",
         "monorepo": true
+      },
+      {
+        "name": "vp-pkg-shadcn",
+        "description": "Add a shared shadcn UI package (packages/ui) into an existing monorepo (themeable via shadcn presets)",
+        "template": "@pauldvlp/vp-pkg-shadcn"
       }
     ]
   },

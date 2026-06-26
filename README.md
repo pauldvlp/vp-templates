@@ -11,7 +11,7 @@ one repo. The index package `@pauldvlp/create` exposes them through `vp create`.
 vp create @pauldvlp                     # interactive picker over every template
 vp create @pauldvlp:vp-react-ts-shadcn  # scaffold a specific template (new project)
 cd existing-monorepo
-vp create @pauldvlp:vp-shadcn           # add a single package into an existing repo (future)
+vp create @pauldvlp:vp-pkg-shadcn       # add a single package (packages/ui) into an existing repo
 ```
 
 > **Why `@pauldvlp:` and not `@pauldvlp/vp:`** — Vite+'s `vp create` only treats a **bare scope**
@@ -23,8 +23,10 @@ vp create @pauldvlp:vp-shadcn           # add a single package into an existing 
 
 ```
 packages/
-├── create/                 → @pauldvlp/create            the org manifest (createConfig.templates)
-└── vp-react-ts-shadcn/     → @pauldvlp/vp-react-ts-shadcn  Bingo generator: website app + shadcn ui
+├── create/                 → @pauldvlp/create              the org manifest (createConfig.templates)
+├── template-kit/           → @pauldvlp/template-kit        private shared helpers (bundled into each generator)
+├── vp-react-ts-shadcn/     → @pauldvlp/vp-react-ts-shadcn  Bingo generator: website app + shadcn ui
+└── vp-pkg-shadcn/          → @pauldvlp/vp-pkg-shadcn       Bingo generator: add packages/ui into an existing repo
 ```
 
 ## Naming convention (how it grows)

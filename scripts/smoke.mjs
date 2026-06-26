@@ -25,6 +25,28 @@ const cases = [
       assert.ok(uiDeps['lucide-react'], 'ui has chosen icon lib')
       assert.ok(webDeps['lucide-react'], 'website has chosen icon lib')
     }
+  },
+  {
+    pkg: 'vp-pkg-shadcn',
+    options: { scope: '@acme', base: 'base', preset: 'vega', iconLibrary: 'lucide', cssVariables: true, rtl: false, pointer: false, components: 'button,badge,card', install: true },
+    expect(files) {
+      // Add-into-existing: emits the UI package contents at the ROOT of the tree (Bingo nests them
+      // under the chosen --directory). No `packages/ui` wrapper, no apps, no root-monorepo package.json.
+      assert.ok(!files.packages, 'does not nest under packages/* (would double to packages/ui/packages/ui)')
+      assert.ok(!files.apps, 'does not emit apps')
+      assert.ok(files['package.json'], 'emits the ui package.json at root')
+      assert.ok(files['components.json'], 'emits components.json at root')
+      assert.ok(files.src?.styles?.['globals.css'], 'emits src/styles/globals.css')
+      const uiPkg = JSON.parse(files['package.json'])
+      assert.equal(uiPkg.name, '@acme/ui', 'ui package name')
+      assert.ok(uiPkg.dependencies['lucide-react'], 'ui has chosen icon lib')
+      // catalog: specifiers must be resolved (no root catalog in a target repo).
+      const allRanges = Object.values({ ...uiPkg.dependencies, ...uiPkg.devDependencies })
+      assert.ok(!allRanges.some((r) => String(r).startsWith('catalog:')), 'catalog: specifiers resolved')
+      assert.equal(uiPkg.devDependencies['vite-plus'], '^0.2.1', 'vite-plus resolved from catalog')
+      assert.match(files['components.json'], /"style": "base-nova"/, 'components.json baked from base')
+      assert.match(files['components.json'], /@acme\/ui\/components/, 'components.json aliases use the scope')
+    }
   }
 ]
 
