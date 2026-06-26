@@ -45,7 +45,7 @@ packages/
 
 ## Develop, test & release
 
-See **[DEVELOPMENT.md](./DEVELOPMENT.md)** for the full workflow. In short:
+See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for the full workflow. In short:
 
 ```bash
 pnpm install

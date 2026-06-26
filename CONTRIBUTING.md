@@ -1,16 +1,56 @@
-# Development
+# Contributing
 
-How to work on the templates, test them with `vp` locally, and release new versions.
+Thanks for taking the time to contribute! 🎉 This guide explains how to set up the project, how to
+propose a change, and how to test templates with `vp` locally before opening a pull request.
 
-## Setup
+Whether you're fixing a typo, improving a template, or adding a brand new generator, you're welcome
+here. If anything below is unclear, [open an issue](https://github.com/pauldvlp/vp-templates/issues)
+and ask — improving these docs is a valid contribution too.
+
+## Quick start
 
 ```bash
+# 1. Fork the repo on GitHub, then clone your fork
+git clone https://github.com/<your-username>/vp-templates.git
+cd vp-templates
+
+# 2. Add the original repo as "upstream" so you can stay in sync
+git remote add upstream https://github.com/pauldvlp/vp-templates.git
+
+# 3. Install dependencies
 pnpm install
 ```
 
 Requirements: Node `>=22.18.0`, pnpm `11.9.0`, and the `vp` (Vite+) CLI installed globally.
 
-## Two ways to test
+## How to contribute a change
+
+1. **Find or open an issue.** For anything beyond a trivial fix, open an issue (or comment on an
+   existing one) so we can agree on the approach before you invest time.
+2. **Create a branch** off an up-to-date `main`:
+   ```bash
+   git checkout main
+   git pull upstream main
+   git checkout -b fix/short-description   # or feat/…, docs/…, chore/…
+   ```
+3. **Make your change** and keep it focused — one logical change per PR is easiest to review.
+4. **Test it** with the smoke tests (and Verdaccio for bigger changes) — see [Testing](#testing).
+5. **Record a changeset** if you touched a publishable package — see [Changesets](#versioning--changelogs-changesets).
+6. **Commit and push** to your fork, then open a PR — see [Opening a pull request](#opening-a-pull-request).
+
+## Opening a pull request
+
+- Push your branch to your fork and open a PR against `pauldvlp/vp-templates` `main`.
+- **Title:** use a short, imperative summary (e.g. `feat: add vp-pkg-vue generator`). We loosely
+  follow [Conventional Commits](https://www.conventionalcommits.org/) prefixes (`feat`, `fix`,
+  `docs`, `chore`, `refactor`, `ci`).
+- **Description:** explain *what* changed and *why*. Link the related issue with `Closes #123`.
+- **Keep PRs small and focused.** Unrelated changes are easier as separate PRs.
+- **Run the checks** in the [PR checklist](#pull-request-checklist) before requesting review.
+- A maintainer will review your PR. Don't worry about bumping versions or publishing — that's handled
+  on merge by a maintainer.
+
+## Testing
 
 ### 1. Fast inner loop — `pnpm smoke` (no registry, no install)
 
@@ -73,14 +113,24 @@ come from Verdaccio; React, shadcn, fonts, etc. still come from the real npm reg
 Versions and `CHANGELOG.md`s are managed with [changesets](https://github.com/changesets/changesets).
 Each publishable package versions independently; the root is private and ignored.
 
-```bash
-# 1. After making changes, record them (pick packages + bump type + write a summary)
-pnpm changeset
+**If your PR changes a publishable package, add a changeset** — this is the one versioning step
+contributors need to do. It tells us which packages changed and how:
 
-# 2. Apply pending changesets: bump versions and write CHANGELOGs
+```bash
+pnpm changeset   # pick the affected packages + bump type, then write a short summary
+```
+
+Commit the generated file in `.changeset/` along with your change. That's it — applying the bump and
+publishing is a maintainer step (documented below for reference).
+
+<details>
+<summary>Maintainer release flow</summary>
+
+```bash
+# Apply pending changesets: bump versions and write CHANGELOGs
 pnpm version
 
-# 3. Publish what changed to npm (builds first via each package's prepack)
+# Publish what changed to npm (builds first via each package's prepack)
 pnpm release
 ```
 
@@ -90,6 +140,8 @@ A typical loop: edit → `pnpm changeset` → commit → when ready, `pnpm versi
 > unpublished. If `pnpm release` 403s on a burned version, run `pnpm changeset` + `pnpm version` again
 > to move to the next number.
 
+</details>
+
 ## Adding a new template
 
 1. `mkdir packages/<gen>` — a Bingo generator (copy `vp-react-ts-shadcn`'s shape: `bin/`, `src/template.ts`,
@@ -98,8 +150,7 @@ A typical loop: edit → `pnpm changeset` → commit → when ready, `pnpm versi
    `{ "name": "vp-<x>", "description": "...", "template": "@pauldvlp/vp-<x>", "monorepo": true | omit }`
    — `monorepo: true` for new-project scaffolds; omit for "add into an existing repo" generators.
 3. Add a smoke case in `scripts/smoke.mjs`.
-4. `pnpm changeset` (new package = `minor`/`major`), then publish both the generator and the bumped
-   `@pauldvlp/create`.
+4. `pnpm changeset` (new package = `minor`/`major`).
 
 See the [root README](./README.md) for the naming convention.
 
@@ -121,10 +172,10 @@ from `--packages=external`, so the published bundle is self-contained with no ba
 import. Adding a `catalog:`-resolving "into an existing repo" generator? Reuse `resolveCatalogDeps`
 and keep `CATALOG` in `template-kit/src/index.ts` in sync with the template `pnpm-workspace.yaml`.
 
-## Publishing checklist
+## Pull request checklist
 
+- [ ] Branch is up to date with `upstream/main`
 - [ ] `pnpm smoke` passes
-- [ ] Tested via Verdaccio (`pnpm registry` + `pnpm publish:local` + `vp create @pauldvlp:...`)
-- [ ] `pnpm changeset` recorded; `pnpm version` applied; CHANGELOGs reviewed
-- [ ] `pnpm release` (publishes to npm with `--access public`)
-- [ ] If `@pauldvlp/create`'s manifest changed, it was bumped and republished too
+- [ ] Bigger changes tested via Verdaccio (`pnpm registry` + `pnpm publish:local` + `vp create @pauldvlp:...`)
+- [ ] A changeset was added (`pnpm changeset`) if a publishable package changed
+- [ ] PR description explains the change and links any related issue (`Closes #…`)
