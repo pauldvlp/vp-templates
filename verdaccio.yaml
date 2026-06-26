@@ -1,0 +1,29 @@
+# Local registry for testing `vp create @pauldvlp:...` before publishing to npm.
+# Start with `pnpm registry`; publish to it with `pnpm publish:local`.
+storage: ./.verdaccio/storage
+auth:
+  htpasswd:
+    file: ./.verdaccio/htpasswd
+    # Allow anonymous publish so local testing needs no login.
+    max_users: -1
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+packages:
+  '@pauldvlp/*':
+    # Our packages: served only from local storage, anyone may publish/unpublish.
+    access: $all
+    publish: $all
+    unpublish: $all
+  '@*/*':
+    access: $all
+    publish: $all
+    proxy: npmjs
+  '**':
+    access: $all
+    publish: $all
+    proxy: npmjs
+log:
+  type: stdout
+  format: pretty
+  level: warn

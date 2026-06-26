@@ -1,0 +1,30 @@
+{
+  "name": "@pauldvlp/vp-templates",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Monorepo of pauldvlp's Vite+ templates and generators, indexed by @pauldvlp/create.",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "smoke": "node scripts/smoke.mjs",
+    "registry": "verdaccio --config verdaccio.yaml --listen 4873",
+    "publish:local": "pnpm -r run build && pnpm -r publish --registry http://localhost:4873 --no-git-checks",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm -r run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "verdaccio": "^6.7.4"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.9.0",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

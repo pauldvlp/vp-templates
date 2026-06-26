@@ -1,0 +1,35 @@
+{
+  "name": "@pauldvlp/vp-react-ts-shadcn",
+  "version": "0.3.0",
+  "description": "Vite+ monorepo template: one frontend app (website) + a shared shadcn UI package, themeable via shadcn presets.",
+  "keywords": [
+    "vite-plus-generator",
+    "vite-plus",
+    "shadcn",
+    "react",
+    "template"
+  ],
+  "bin": "./dist/index.js",
+  "type": "module",
+  "files": [
+    "dist",
+    "template"
+  ],
+  "scripts": {
+    "build": "esbuild bin/index.ts --bundle --outfile=dist/index.js --format=esm --platform=node --target=node22 --packages=external",
+    "dev": "node bin/index.ts",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "bingo": "^0.9.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "esbuild": "^0.25.0",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

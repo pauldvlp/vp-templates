@@ -1,0 +1,24 @@
+{
+  "name": "@pauldvlp/create",
+  "version": "0.1.0",
+  "description": "pauldvlp's Vite+ project templates, usable via `vp create @pauldvlp`.",
+  "type": "module",
+  "keywords": [
+    "vite-plus",
+    "create",
+    "templates"
+  ],
+  "createConfig": {
+    "templates": [
+      {
+        "name": "vp-react-ts-shadcn",
+        "description": "Vite+ monorepo — website app + shared shadcn UI package (themeable via shadcn presets)",
+        "template": "@pauldvlp/vp-react-ts-shadcn",
+        "monorepo": true
+      }
+    ]
+  },
+  "files": [
+    "package.json"
+  ]
+}

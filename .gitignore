@@ -1,0 +1,8 @@
+node_modules
+dist
+.artifacts
+.verdaccio
+.smoke
+*.log
+*.tgz
+.DS_Store

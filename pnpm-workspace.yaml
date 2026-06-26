@@ -1,0 +1,12 @@
+# Only direct children of packages/ are workspace packages. The `template/` directory
+# inside a generator is shipped data (a project skeleton), NOT a workspace package — the
+# single-level `packages/*` glob deliberately does not descend into it.
+packages:
+  - packages/*
+
+allowBuilds:
+  esbuild: true
+
+# `pnpm run <script>` otherwise re-runs an install/status check before each script, which
+# fails the build/prepack here; the workspace install already keeps deps in sync.
+verifyDepsBeforeRun: false
