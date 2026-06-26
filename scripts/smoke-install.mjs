@@ -8,7 +8,7 @@
 // that published a breaking version inside an allowed range.
 //
 //   pnpm smoke:install         # scaffold + `pnpm install` only (dependency-resolution gate)
-//   pnpm smoke:install --full  # also run shadcn init/add + `pnpm run ready` (build/typecheck)
+//   pnpm smoke:install --full  # also run shadcn init/add + `pnpm run build` (typecheck + bundle)
 //
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -67,7 +67,11 @@ for (const c of cases) {
       if (!FULL && step.phase !== 0) continue
       for (const cmd of step.commands) run(cmd, dir)
     }
-    if (FULL) run('pnpm run ready', dir)
+    // `pnpm run build` (= `vp run -r build`, includes the website's `tsc -b`) proves the project
+    // typechecks and bundles after a real install. We deliberately do NOT run `vp check`/`pnpm run
+    // ready` here: that gate also formats/lints, and shadcn-generated components don't match oxfmt's
+    // style — a formatting nit is noise for a dependency-drift smoke.
+    if (FULL) run('pnpm run build', dir)
 
     console.log(`✓ ${c.pkg} installed cleanly`)
     fs.rmSync(dir, { recursive: true, force: true })

@@ -40,7 +40,7 @@ to notice when a dependency ships a breaking version inside an allowed range.
 
 ```bash
 pnpm smoke:install         # scaffold + `pnpm install` (dependency-resolution gate)
-pnpm smoke:install --full  # also run shadcn init/add + `pnpm run ready` (build/typecheck)
+pnpm smoke:install --full  # also run shadcn init/add + `pnpm run build` (typecheck + bundle)
 ```
 
 ### 2. Full `vp create` against a local registry (Verdaccio)
