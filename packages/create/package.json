@@ -1,6 +1,6 @@
 {
   "name": "@pauldvlp/create",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "pauldvlp's Vite+ project templates, usable via `vp create @pauldvlp`.",
   "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
   "license": "MIT",
