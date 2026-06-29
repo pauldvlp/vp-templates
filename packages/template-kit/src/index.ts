@@ -138,6 +138,34 @@ export function addIconDeps(pkg: any, iconLibrary: string): void {
   pkg.dependencies = { ...pkg.dependencies, ...iconDeps }
 }
 
+// ─── Validators for user-influenced option values ────────────────────────────
+// Post-scaffold steps run WITHOUT a shell (see `runTemplateCLI`), so shell injection is structurally
+// impossible. These keep the genuinely user-controlled fields to argv-safe shapes anyway: every value
+// must start with an alphanumeric (never `-`, which a child CLI would read as a flag) and carry no
+// whitespace or shell metacharacters. Each returns an error message, or undefined when valid — the
+// shape `OptionDescriptor.validate` expects, so they guard both CLI flags and interactive prompts.
+
+/** A lowercase-ish npm scope or package name: `@acme`, `acme`, `@acme/app`. */
+export function validateScope(value: string): string | undefined {
+  return /^@?[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(value.trim()) ? undefined : 'must be a package scope/name, e.g. @acme'
+}
+
+/** A project / package name: same argv-safe shape as a scope. */
+export function validateName(value: string): string | undefined {
+  return /^@?[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(value.trim()) ? undefined : 'must be a package name, e.g. my-app or @acme/app'
+}
+
+/** A shadcn preset: a style name or a ui.shadcn.com code (letters, digits, `-`, `_`). */
+export function validatePreset(value: string): string | undefined {
+  return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(value.trim()) ? undefined : 'must be a style name or ui.shadcn.com code'
+}
+
+/** A comma-separated shadcn component list, each name lowercase letters/digits/`-`. */
+export function validateComponents(value: string): string | undefined {
+  const parts = value.split(',').map((c) => c.trim()).filter(Boolean)
+  return parts.every((c) => /^[a-z0-9][a-z0-9-]*$/.test(c)) ? undefined : 'comma-separated component names, e.g. button,card,dialog'
+}
+
 /** Expand a comma-separated component list, always including `required` ones so the starter compiles. */
 export function withRequiredComponents(csv: string, required: string[] = ['button', 'badge']): string[] {
   const requested = csv
@@ -211,18 +239,22 @@ export type ShadcnInitOpts = {
   pointer: boolean
 }
 
-/** Build the `shadcn init` flag string shared by both generators. */
-export function shadcnInitFlags(opts: ShadcnInitOpts): string {
+/**
+ * Build the `shadcn init` argv shared by both generators. Returns a flat argument array (not a shell
+ * string) so each value — including the user-supplied `--preset` — is passed as one literal token to
+ * `execFileSync` with no shell, leaving no room for command injection.
+ */
+export function shadcnInitArgs(opts: ShadcnInitOpts): string[] {
   return [
-    `--base ${opts.base}`,
-    `--preset ${opts.preset}`,
+    '--base', opts.base,
+    '--preset', opts.preset,
     opts.cssVariables ? '--css-variables' : '--no-css-variables',
     opts.rtl ? '--rtl' : '--no-rtl',
     opts.pointer ? '--pointer' : '--no-pointer',
     '--no-reinstall',
     '-y',
     '-f'
-  ].join(' ')
+  ]
 }
 
 // ─── Generator runtime ───────────────────────────────────────────────────────
@@ -255,9 +287,13 @@ export interface OptionDescriptor<O = Record<string, unknown>> {
   validate?: (value: string) => string | undefined
 }
 
-/** A batch of shell commands to run after scaffolding; lower `phase` runs first. */
+/**
+ * A batch of commands to run after scaffolding; lower `phase` runs first. Each command is an argv
+ * array — `[program, ...args]` — run directly with no shell, so user-derived args can never be
+ * interpreted as shell syntax. e.g. `['pnpm', '--filter', '@acme/ui', 'exec', 'shadcn', 'add', 'button']`.
+ */
 export interface Script {
-  commands: string[]
+  commands: string[][]
   phase: number
 }
 
@@ -283,16 +319,22 @@ export function defineTemplate<O>(config: TemplateConfig<O>): TemplateConfig<O> 
   return config
 }
 
-/** Write a nested `files` tree to disk under `dir`. */
-export function writeTree(node: Tree, dir: string): void {
+/** Write a nested `files` tree to disk under `dir`, never escaping the target root. */
+export function writeTree(node: Tree, dir: string, root: string = path.resolve(dir)): void {
   for (const [name, value] of Object.entries(node)) {
-    const p = path.join(dir, name)
+    const p = path.resolve(dir, name)
+    // Guard against a tree key like `..` or an absolute path writing outside the chosen target
+    // directory: the resolved destination must stay within `root`.
+    const rel = path.relative(root, p)
+    if (rel === '' || rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {
+      throw new Error(`Refusing to write outside the target directory: ${name}`)
+    }
     if (typeof value === 'string') {
       fs.mkdirSync(path.dirname(p), { recursive: true })
       fs.writeFileSync(p, value)
     } else {
       fs.mkdirSync(p, { recursive: true })
-      writeTree(value, p)
+      writeTree(value, p, root)
     }
   }
 }
@@ -471,8 +513,11 @@ export async function runTemplateCLI<O>(template: TemplateConfig<O>): Promise<nu
 
   if (creation.scripts?.length) {
     for (const step of [...creation.scripts].sort((a, b) => a.phase - b.phase)) {
-      for (const command of step.commands) {
-        execFileSync(command, { cwd: directory, stdio: 'inherit', shell: true })
+      for (const [program, ...commandArgs] of step.commands) {
+        if (!program) continue
+        // No shell: the program and each argument are passed literally, so user-derived values
+        // (scope, preset, component names) can never be parsed as shell syntax.
+        execFileSync(program, commandArgs, { cwd: directory, stdio: 'inherit' })
       }
     }
   }

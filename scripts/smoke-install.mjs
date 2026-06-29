@@ -47,10 +47,11 @@ function write(node, dir) {
   }
 }
 
-function run(cmd, cwd) {
-  console.log(`  $ ${cmd}`)
-  // Run through a shell so the emitted scripts (which are full command strings) work verbatim.
-  execFileSync(cmd, { cwd, stdio: 'inherit', shell: true })
+function run(argv, cwd) {
+  const [program, ...args] = argv
+  console.log(`  $ ${argv.join(' ')}`)
+  // Mirror the real runtime: emitted scripts are argv arrays run with no shell.
+  execFileSync(program, args, { cwd, stdio: 'inherit' })
 }
 
 fs.rmSync(OUT, { recursive: true, force: true })
@@ -69,13 +70,13 @@ for (const c of cases) {
     const ordered = [...scripts].sort((a, b) => a.phase - b.phase)
     for (const step of ordered) {
       if (!FULL && step.phase !== 0) continue
-      for (const cmd of step.commands) run(cmd, dir)
+      for (const command of step.commands) run(command, dir)
     }
     // `pnpm run build` (= `vp run -r build`, includes the website's `tsc -b`) proves the project
     // typechecks and bundles after a real install. We deliberately do NOT run `vp check`/`pnpm run
     // ready` here: that gate also formats/lints, and shadcn-generated components don't match oxfmt's
     // style — a formatting nit is noise for a dependency-drift smoke.
-    if (FULL) run('pnpm run build', dir)
+    if (FULL) run(['pnpm', 'run', 'build'], dir)
 
     console.log(`✓ ${c.pkg} installed cleanly`)
     fs.rmSync(dir, { recursive: true, force: true })

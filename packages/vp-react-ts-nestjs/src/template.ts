@@ -1,9 +1,8 @@
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { defineTemplate, dirName, patchJson, readTree, toScope, type Tree } from '@pauldvlp/template-kit'
-
-import pkgJson from '../package.json' with { type: 'json' }
+import { defineTemplate, dirName, patchJson, readTree, toScope, validateName, validateScope, type Tree } from '@pauldvlp/template-kit'
 
 /** Reject a port that isn't a plain integer in the 1–65535 range (validated for both flags and prompts). */
 function validatePort(value: string): string | undefined {
@@ -11,6 +10,14 @@ function validatePort(value: string): string | undefined {
 }
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'template')
+
+// Read the package's own name/description at runtime rather than statically importing package.json:
+// a static import makes esbuild inline the entire manifest — repository/homepage/bugs URLs included —
+// into the published bundle, where they show up as stray URL strings. Resolves to the package root in
+// both `node bin/index.ts` (dev) and the bundled `dist/index.js`, since each sits one level under it.
+const { name: pkgName, description: pkgDescription } = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+) as { name: string; description: string }
 
 // The api entrypoint ships with two marker comments so Swagger can be wired in (or stripped out)
 // without keeping a second copy of main.ts. `apps/api/src/main.ts` is matched by relative path below.
@@ -51,16 +58,16 @@ interface Options {
 
 export default defineTemplate<Options>({
   about: {
-    name: pkgJson.name,
-    description: pkgJson.description
+    name: pkgName,
+    description: pkgDescription
   },
 
   options: [
     // Default the name to the target directory the user chose, so they don't retype it.
-    { key: 'name', type: 'string', message: 'Root project / package name', default: ({ directory }) => dirName(directory) },
+    { key: 'name', type: 'string', message: 'Root project / package name', default: ({ directory }) => dirName(directory), validate: validateName },
     // Lazily default the package scope to `@<name>` (prefixing `@` unless the name already has one),
     // so it tracks the project name instead of a fixed value. Falls back to `@app` when no name is set.
-    { key: 'scope', type: 'string', message: 'npm scope for workspace packages, e.g. @acme (defaults to @<name>)', default: ({ options }) => (options.name ? toScope(options.name) : '@app') },
+    { key: 'scope', type: 'string', message: 'npm scope for workspace packages, e.g. @acme (defaults to @<name>)', default: ({ options }) => (options.name ? toScope(options.name) : '@app'), validate: validateScope },
     // Ports stay strings (validated as integers): they're only ever substituted into config files as text.
     { key: 'apiPort', type: 'string', message: 'Port the NestJS api listens on', default: '3000', validate: validatePort },
     { key: 'webPort', type: 'string', message: 'Port the web dev server listens on', default: '5173', validate: validatePort },
@@ -126,7 +133,7 @@ export default defineTemplate<Options>({
       delete ((files.apps as Tree).api as Tree)['Dockerfile']
     }
 
-    const scripts = options.install ? [{ commands: ['pnpm install --silent'], phase: 0 }] : []
+    const scripts = options.install ? [{ commands: [['pnpm', 'install', '--silent']], phase: 0 }] : []
 
     return {
       files,
