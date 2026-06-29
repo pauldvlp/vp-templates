@@ -33,7 +33,7 @@ const cases = [
   }
 ]
 
-/** Write Bingo's nested `files` tree to disk. */
+/** Write the nested `files` tree to disk. */
 function write(node, dir) {
   for (const [k, v] of Object.entries(node)) {
     const p = path.join(dir, k)

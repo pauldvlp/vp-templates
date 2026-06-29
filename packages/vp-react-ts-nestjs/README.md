@@ -16,8 +16,7 @@ The api rides Vite+'s native **Oxc** transform, which emits `emitDecoratorMetada
 the production build is a Vite SSR bundle (`dist/main.js`), and a single `vp check` / `vp test` /
 `vp run -r build` covers the whole workspace.
 
-It's a [Bingo](https://create.bingo) template, so options can be passed on the `vp create` command line
-(anything after `--`).
+Options can be passed on the `vp create` command line (anything after `--`) or answered interactively.
 
 ## Usage
 
@@ -32,9 +31,8 @@ vp create @pauldvlp:vp-react-ts-nestjs -- \
   --name my-app --scope @acme --apiPort 3000 --webPort 5173
 ```
 
-> Only **string** options parse reliably as `vp create -- --flag value`. **Boolean** options
-> (`--swagger`, `--serveWeb`, `--docker`, `--install`) are best left to the interactive prompt — Bingo's
-> CLI does not accept `--no-x` / `--x=false` cleanly. Omit them and answer the prompt.
+> **Boolean** options (`--swagger`, `--serveWeb`, `--docker`, `--install`) accept both forms: pass
+> `--swagger` to enable or `--no-swagger` to disable. Omit any option to answer it at the interactive prompt.
 
 ## Options
 

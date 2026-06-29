@@ -9,9 +9,8 @@ A [Vite+](https://viteplus.dev) **monorepo generator** that scaffolds a minimal 
 - `apps/website` — a React + Vite+ app (Tailwind v4, React Compiler)
 - `packages/ui` — a shared **shadcn** design system consumed by the app
 
-It's a [Bingo](https://create.bingo) template, so options can be passed on the `vp create` command
-line (anything after `--`) and the **shadcn theme is materialized at create time** from the preset
-you choose.
+Options can be passed on the `vp create` command line (anything after `--`) or answered interactively,
+and the **shadcn theme is materialized at create time** from the preset you choose.
 
 ## Usage
 
@@ -26,9 +25,8 @@ vp create @pauldvlp:vp-react-ts-shadcn -- \
   --name my-app --scope @acme --base base --preset vega --iconLibrary lucide --components button,card,dialog
 ```
 
-> Only **string/enum** options parse reliably as `vp create -- --flag value`. **Boolean** options
-> (`--cssVariables`, `--rtl`, `--pointer`, `--install`) are best left to the interactive prompt —
-> Bingo's CLI does not accept `--no-x` / `--x=false` cleanly. Omit them and answer the prompt.
+> **Boolean** options (`--cssVariables`, `--rtl`, `--pointer`, `--install`) accept both forms: pass
+> `--rtl` to enable or `--no-rtl` to disable. Omit any option to answer it at the interactive prompt.
 
 ## Options
 

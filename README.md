@@ -24,10 +24,10 @@ vp create @pauldvlp:vp-pkg-shadcn       # add a single package (packages/ui) int
 ```
 packages/
 ├── create/                 → @pauldvlp/create              the org manifest (createConfig.templates)
-├── template-kit/           → @pauldvlp/template-kit        private shared helpers (bundled into each generator)
-├── vp-react-ts-shadcn/     → @pauldvlp/vp-react-ts-shadcn  Bingo generator: website app + shadcn ui
-├── vp-react-ts-nestjs/     → @pauldvlp/vp-react-ts-nestjs  Bingo generator: React web app + NestJS api + Zod contracts
-└── vp-pkg-shadcn/          → @pauldvlp/vp-pkg-shadcn       Bingo generator: add packages/ui into an existing repo
+├── template-kit/           → @pauldvlp/template-kit        private shared helpers + CLI runtime (bundled into each generator)
+├── vp-react-ts-shadcn/     → @pauldvlp/vp-react-ts-shadcn  generator: website app + shadcn ui
+├── vp-react-ts-nestjs/     → @pauldvlp/vp-react-ts-nestjs  generator: React web app + NestJS api + Zod contracts
+└── vp-pkg-shadcn/          → @pauldvlp/vp-pkg-shadcn       generator: add packages/ui into an existing repo
 ```
 
 ## Naming convention (how it grows)
@@ -41,7 +41,7 @@ packages/
 - `monorepo: true` hides the entry when `vp create` runs inside an existing monorepo (new-project
   scaffolds only). Omitting it keeps the entry available inside existing repos — for "add a package"
   and "add a pack" generators.
-- **Adding a template** = create `packages/<pkg>/` (a Bingo generator), then add one entry to
+- **Adding a template** = create `packages/<pkg>/` (a generator), then add one entry to
   `packages/create/package.json` → `createConfig.templates`.
 
 ## Develop, test & release

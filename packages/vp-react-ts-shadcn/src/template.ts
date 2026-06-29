@@ -5,6 +5,8 @@ import {
   addIconDeps,
   appComponentsJson,
   DEFAULT_PRESET,
+  defineTemplate,
+  dirName,
   patchJson,
   readTree,
   setPath,
@@ -13,48 +15,45 @@ import {
   uiComponentsJson,
   withRequiredComponents
 } from '@pauldvlp/template-kit'
-import { createTemplate } from 'bingo'
-import { z } from 'zod'
 
 import pkgJson from '../package.json' with { type: 'json' }
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'template')
 
-export default createTemplate({
+interface Options {
+  name: string
+  scope: string
+  base: 'radix' | 'base'
+  preset: string
+  iconLibrary: 'lucide' | 'hugeicons' | 'radix' | 'tabler'
+  cssVariables: boolean
+  rtl: boolean
+  pointer: boolean
+  components: string
+  install: boolean
+}
+
+export default defineTemplate<Options>({
   about: {
     name: pkgJson.name,
     description: pkgJson.description
   },
 
-  options: {
-    name: z.string().describe('Root project / package name').default('my-app'),
-    scope: z.string().describe('npm scope for workspace packages, e.g. @acme (defaults to @<name>)'),
-    // Unions of literals (not z.enum) so the value is settable on Bingo's CLI: bingo's arg parser
-    // handles ZodUnion/ZodLiteral but not ZodEnum (a bare `--base radix` would otherwise mis-parse to
-    // `base: true`). Both still render as an interactive `select`.
-    base: z.union([z.literal('radix'), z.literal('base')]).describe('shadcn component library base (radix-ui or @base-ui)').default('radix'),
-    preset: z
-      .string()
-      .describe('shadcn preset: a style name (nova, vega, maia, lyra, mira, luma, sera, rhea) or a code from ui.shadcn.com')
-      .default(DEFAULT_PRESET),
-    iconLibrary: z
-      .union([z.literal('lucide'), z.literal('hugeicons'), z.literal('radix'), z.literal('tabler')])
-      .describe('Icon library')
-      .default('hugeicons'),
-    cssVariables: z.boolean().describe('Use CSS variables for theming').default(true),
-    rtl: z.boolean().describe('Enable RTL support').default(false),
-    pointer: z.boolean().describe('Use pointer cursor on interactive elements').default(false),
-    components: z.string().describe('Comma-separated shadcn components to pre-install, e.g. button,card,dialog').default('button,badge'),
-    install: z.boolean().describe('Install deps and apply the shadcn theme after scaffolding').default(true)
-  },
-
-  // Lazily default the package scope to `@<name>` (prefixing `@` unless the name already has one),
-  // so it tracks the project name instead of a fixed value. Falls back to `@app` when no name is set.
-  prepare({ options }) {
-    return {
-      scope: () => (options.name ? toScope(options.name) : '@app')
-    }
-  },
+  options: [
+    // Default the name to the target directory the user chose, so they don't retype it.
+    { key: 'name', type: 'string', message: 'Root project / package name', default: ({ directory }) => dirName(directory) },
+    // Lazily default the package scope to `@<name>` (prefixing `@` unless the name already has one),
+    // so it tracks the project name instead of a fixed value. Falls back to `@app` when no name is set.
+    { key: 'scope', type: 'string', message: 'npm scope for workspace packages, e.g. @acme (defaults to @<name>)', default: ({ options }) => (options.name ? toScope(options.name) : '@app') },
+    { key: 'base', type: 'select', message: 'shadcn component library base (radix-ui or @base-ui)', choices: ['radix', 'base'], default: 'radix' },
+    { key: 'preset', type: 'string', message: 'shadcn preset: a style name (nova, vega, maia, lyra, mira, luma, sera, rhea) or a code from ui.shadcn.com', default: DEFAULT_PRESET },
+    { key: 'iconLibrary', type: 'select', message: 'Icon library', choices: ['lucide', 'hugeicons', 'radix', 'tabler'], default: 'hugeicons' },
+    { key: 'cssVariables', type: 'boolean', message: 'Use CSS variables for theming', default: true },
+    { key: 'rtl', type: 'boolean', message: 'Enable RTL support', default: false },
+    { key: 'pointer', type: 'boolean', message: 'Use pointer cursor on interactive elements', default: false },
+    { key: 'components', type: 'string', message: 'Comma-separated shadcn components to pre-install, e.g. button,card,dialog', default: 'button,badge' },
+    { key: 'install', type: 'boolean', message: 'Install deps and apply the shadcn theme after scaffolding', default: true }
+  ],
 
   async produce({ options }) {
     const scope = toScope(options.scope || options.name || 'app')

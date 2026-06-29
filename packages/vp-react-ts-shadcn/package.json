@@ -30,8 +30,7 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "bingo": "^0.9.3",
-    "zod": "^3.25.76"
+    "@clack/prompts": "^1.6.0"
   },
   "devDependencies": {
     "@pauldvlp/template-kit": "workspace:*",

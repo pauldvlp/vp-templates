@@ -2,7 +2,7 @@
   "name": "@pauldvlp/template-kit",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal helpers shared by the @pauldvlp Bingo generators (file-tree building, shadcn components.json, icon libs, catalog resolution). Not published — bundled into each generator's dist via tsconfig paths.",
+  "description": "Internal helpers + CLI runtime shared by the @pauldvlp generators (file-tree building, shadcn components.json, icon libs, catalog resolution, the runTemplateCLI runtime). Not published — bundled into each generator's dist via tsconfig paths.",
   "type": "module",
   "main": "./src/index.ts",
   "exports": {
@@ -11,6 +11,9 @@
   "files": [
     "src"
   ],
+  "dependencies": {
+    "@clack/prompts": "^1.6.0"
+  },
   "engines": {
     "node": ">=22.18.0"
   }

@@ -9,10 +9,10 @@ A [Vite+](https://viteplus.dev) **package generator** that drops a shared, fully
 
 - `packages/ui` — a shared shadcn design system (Tailwind v4, fonts, `lib/utils`, `components/ui/*`)
 
-It's a [Bingo](https://create.bingo) template, so options can be passed on the `vp create` command
-line (anything after `--`) and the **shadcn theme is materialized at create time** from the preset
-you choose. Unlike [`@pauldvlp/vp-react-ts-shadcn`](../vp-react-ts-shadcn) (which scaffolds a whole
-monorepo), this only emits `packages/ui` and leaves the rest of your repo untouched.
+Options can be passed on the `vp create` command line (anything after `--`) or answered interactively,
+and the **shadcn theme is materialized at create time** from the preset you choose. Unlike
+[`@pauldvlp/vp-react-ts-shadcn`](../vp-react-ts-shadcn) (which scaffolds a whole monorepo), this only
+emits `packages/ui` and leaves the rest of your repo untouched.
 
 ## Usage
 
@@ -27,9 +27,8 @@ vp create @pauldvlp:vp-pkg-shadcn -- \
   --scope @acme --base base --preset vega --iconLibrary lucide --components button,card,dialog
 ```
 
-> Only **string/enum** options parse reliably as `vp create -- --flag value`. **Boolean** options
-> (`--cssVariables`, `--rtl`, `--pointer`, `--install`) are best left to the interactive prompt —
-> Bingo's CLI does not accept `--no-x` / `--x=false` cleanly. Omit them and answer the prompt.
+> **Boolean** options (`--cssVariables`, `--rtl`, `--pointer`, `--install`) accept both forms: pass
+> `--rtl` to enable or `--no-rtl` to disable. Omit any option to answer it at the interactive prompt.
 
 ### Requirements
 
@@ -40,7 +39,7 @@ generator does **not** edit your `pnpm-workspace.yaml` or any app — wiring a c
 
 ### Where it lands (the `--directory`)
 
-The generator emits the package contents at the **root** of its file tree, and Bingo writes them under
+The generator emits the package contents at the **root** of its file tree, and the runtime writes them under
 the target directory — which **defaults to `ui`** (so within `vp create`'s monorepo flow it lands at
 `<chosen-parent>/ui`, e.g. `packages/ui`). Pass `--directory <path>` to place it elsewhere. `--scope`
 defaults to the **surrounding monorepo's scope** (read from the nearest `pnpm-workspace.yaml`'s

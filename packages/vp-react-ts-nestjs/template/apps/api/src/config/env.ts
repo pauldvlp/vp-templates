@@ -1,9 +1,9 @@
-import { z } from 'zod'
+import * as z from 'zod/v4-mini'
 
 /** Validate `process.env` at boot — the app fails fast with a clear error if something is missing. */
 export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(__API_PORT__)
+  NODE_ENV: z._default(z.enum(['development', 'production', 'test']), 'development'),
+  PORT: z._default(z.coerce.number(), __API_PORT__)
 })
 
 export type Env = z.infer<typeof envSchema>

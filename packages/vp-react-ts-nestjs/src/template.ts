@@ -1,11 +1,14 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { patchJson, readTree, toScope, type Tree } from '@pauldvlp/template-kit'
-import { createTemplate } from 'bingo'
-import { z } from 'zod'
+import { defineTemplate, dirName, patchJson, readTree, toScope, type Tree } from '@pauldvlp/template-kit'
 
 import pkgJson from '../package.json' with { type: 'json' }
+
+/** Reject a port that isn't a plain integer in the 1–65535 range (validated for both flags and prompts). */
+function validatePort(value: string): string | undefined {
+  return /^\d+$/.test(value) && Number(value) > 0 && Number(value) < 65536 ? undefined : 'must be a number between 1 and 65535'
+}
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'template')
 
@@ -35,33 +38,37 @@ function applyDocBlock(text: string, tag: string, keep: boolean): string {
     : text.replace(new RegExp(`<!-- ${tag}:START -->\\n[\\s\\S]*?<!-- ${tag}:END -->\\n`, 'g'), '')
 }
 
-export default createTemplate({
+interface Options {
+  name: string
+  scope: string
+  apiPort: string
+  webPort: string
+  swagger: boolean
+  serveWeb: boolean
+  docker: boolean
+  install: boolean
+}
+
+export default defineTemplate<Options>({
   about: {
     name: pkgJson.name,
     description: pkgJson.description
   },
 
-  options: {
-    name: z.string().describe('Root project / package name').default('my-app'),
-    scope: z.string().describe('npm scope for workspace packages, e.g. @acme (defaults to @<name>)'),
-    // Ports are strings, not z.number(): Bingo's clack prompt renders an option's default as a text
-    // placeholder and calls `.slice` on it, which throws for non-string defaults. They're only ever
-    // substituted into config files as text anyway.
-    apiPort: z.string().describe('Port the NestJS api listens on').default('3000'),
-    webPort: z.string().describe('Port the web dev server listens on').default('5173'),
-    swagger: z.boolean().describe('Expose Swagger UI at /docs on the api').default(false),
-    serveWeb: z.boolean().describe('Have the api serve the built web app (single deployable)').default(false),
-    docker: z.boolean().describe('Add a multi-stage Dockerfile for the api').default(false),
-    install: z.boolean().describe('Install deps after scaffolding').default(true)
-  },
-
-  // Lazily default the package scope to `@<name>` (prefixing `@` unless the name already has one),
-  // so it tracks the project name instead of a fixed value. Falls back to `@app` when no name is set.
-  prepare({ options }) {
-    return {
-      scope: () => (options.name ? toScope(options.name) : '@app')
-    }
-  },
+  options: [
+    // Default the name to the target directory the user chose, so they don't retype it.
+    { key: 'name', type: 'string', message: 'Root project / package name', default: ({ directory }) => dirName(directory) },
+    // Lazily default the package scope to `@<name>` (prefixing `@` unless the name already has one),
+    // so it tracks the project name instead of a fixed value. Falls back to `@app` when no name is set.
+    { key: 'scope', type: 'string', message: 'npm scope for workspace packages, e.g. @acme (defaults to @<name>)', default: ({ options }) => (options.name ? toScope(options.name) : '@app') },
+    // Ports stay strings (validated as integers): they're only ever substituted into config files as text.
+    { key: 'apiPort', type: 'string', message: 'Port the NestJS api listens on', default: '3000', validate: validatePort },
+    { key: 'webPort', type: 'string', message: 'Port the web dev server listens on', default: '5173', validate: validatePort },
+    { key: 'swagger', type: 'boolean', message: 'Expose Swagger UI at /docs on the api', default: false },
+    { key: 'serveWeb', type: 'boolean', message: 'Have the api serve the built web app (single deployable)', default: false },
+    { key: 'docker', type: 'boolean', message: 'Add a multi-stage Dockerfile for the api', default: false },
+    { key: 'install', type: 'boolean', message: 'Install deps after scaffolding', default: true }
+  ],
 
   async produce({ options }) {
     const scope = toScope(options.scope || options.name || 'app')

@@ -1,7 +1,10 @@
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
-/** Bingo's nested `files` shape: a directory is an object, a file is its string content. */
+import * as prompts from '@clack/prompts'
+
+/** Nested `files` shape: a directory is an object, a file is its string content. */
 export type Tree = { [name: string]: string | Tree }
 
 // Files shipped with a leading underscore so `npm publish` doesn't mangle dotfiles.
@@ -45,6 +48,12 @@ export function toScope(name: string): string {
   return n.startsWith('@') ? n : `@${n}`
 }
 
+/** The folder name from a target directory path, falling back to `my-app` for `.`/empty. */
+export function dirName(directory: string): string {
+  const base = path.basename(directory || '')
+  return base && base !== '.' ? base : 'my-app'
+}
+
 /**
  * Derive the workspace npm scope from the monorepo the cwd sits in: walk up to the nearest
  * `pnpm-workspace.yaml` and read its sibling `package.json` name (e.g. root `"acme"` → `@acme`,
@@ -73,7 +82,7 @@ export function detectMonorepoScope(): string | undefined {
   return undefined
 }
 
-/** Recursively read a directory into Bingo's nested `files` shape, applying a text transform. */
+/** Recursively read a directory into the nested `files` shape, applying a text transform. */
 export function readTree(dir: string, transform: (relPath: string, content: string) => string, base = dir): Tree {
   const out: Tree = {}
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -214,4 +223,265 @@ export function shadcnInitFlags(opts: ShadcnInitOpts): string {
     '-y',
     '-f'
   ].join(' ')
+}
+
+// ─── Generator runtime ───────────────────────────────────────────────────────
+// A small, self-contained replacement for the slice of Bingo these generators used:
+// parse argv → resolve options (defaults + prompts) → produce() → write files →
+// run post-scaffold scripts by phase → git init. Keeps generators free of Bingo (and
+// of Zod), so their CLIs and prompt UX are owned here.
+
+/** A single CLI option. `select` restricts to `choices` (no invalid value possible). */
+export type OptionType = 'string' | 'boolean' | 'select'
+
+/** Context passed to a dynamic `default`, so an option can derive from earlier answers and the target dir. */
+export interface DefaultContext<O> {
+  /** Options resolved so far (declaration order), so e.g. `scope` can read `name`. */
+  options: Partial<O>
+  /** The chosen target directory (e.g. so `name` can default to the folder the user typed). */
+  directory: string
+}
+
+export interface OptionDescriptor<O = Record<string, unknown>> {
+  key: string
+  type: OptionType
+  /** Prompt message, also used as the `--help` description. */
+  message: string
+  /** A static default, or one derived from earlier answers / the target directory. */
+  default?: string | boolean | ((context: DefaultContext<O>) => string | boolean)
+  /** Allowed values for `type: 'select'`. */
+  choices?: readonly string[]
+  /** Validate a string/select value (CLI flag *and* prompt). Return an error message, or undefined if valid. */
+  validate?: (value: string) => string | undefined
+}
+
+/** A batch of shell commands to run after scaffolding; lower `phase` runs first. */
+export interface Script {
+  commands: string[]
+  phase: number
+}
+
+/** What a template's `produce()` returns. */
+export interface Creation {
+  files: Tree
+  scripts?: Script[]
+  suggestions?: string[]
+}
+
+export interface TemplateConfig<O> {
+  about?: { name?: string; description?: string }
+  options: readonly OptionDescriptor<O>[]
+  /** Whether to `git init` + initial commit after scaffolding. Default true; skipped inside an existing repo. */
+  git?: boolean
+  produce: (context: { options: O }) => Creation | Promise<Creation>
+}
+
+export type Template<O = Record<string, unknown>> = TemplateConfig<O>
+
+/** Identity factory: keeps `options`/`produce` on the returned object for both the runtime and the smoke tests. */
+export function defineTemplate<O>(config: TemplateConfig<O>): TemplateConfig<O> {
+  return config
+}
+
+/** Write a nested `files` tree to disk under `dir`. */
+export function writeTree(node: Tree, dir: string): void {
+  for (const [name, value] of Object.entries(node)) {
+    const p = path.join(dir, name)
+    if (typeof value === 'string') {
+      fs.mkdirSync(path.dirname(p), { recursive: true })
+      fs.writeFileSync(p, value)
+    } else {
+      fs.mkdirSync(p, { recursive: true })
+      writeTree(value, p)
+    }
+  }
+}
+
+/** Minimal argv parser: `--key value`, `--key=value`, boolean `--key` / `--no-key`. */
+function parseArgv(argv: string[], descriptors: readonly OptionDescriptor<any>[]): { values: Record<string, string | boolean>; directory?: string } {
+  const booleanKeys = new Set(descriptors.filter((d) => d.type === 'boolean').map((d) => d.key))
+  const values: Record<string, string | boolean> = {}
+  let directory: string | undefined
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]!
+    if (!arg.startsWith('--')) continue
+    let body = arg.slice(2)
+
+    // Boolean negation: `--no-install` → install=false.
+    if (body.startsWith('no-') && booleanKeys.has(body.slice(3))) {
+      values[body.slice(3)] = false
+      continue
+    }
+
+    let inline: string | undefined
+    const eq = body.indexOf('=')
+    if (eq !== -1) {
+      inline = body.slice(eq + 1)
+      body = body.slice(0, eq)
+    }
+
+    if (body === 'directory') {
+      directory = inline ?? argv[++i]
+      continue
+    }
+    if (booleanKeys.has(body)) {
+      values[body] = inline === undefined ? true : inline !== 'false'
+      continue
+    }
+    values[body] = inline ?? argv[++i] ?? ''
+  }
+
+  return { values, directory }
+}
+
+function resolveDefault<O>(d: OptionDescriptor<O>, options: Partial<O>, directory: string): string | boolean | undefined {
+  return typeof d.default === 'function' ? d.default({ options, directory }) : d.default
+}
+
+/** Render the right clack prompt for an option, pre-filled with its default. */
+async function promptForOption(d: OptionDescriptor<any>, def: string | boolean | undefined): Promise<string | boolean | symbol> {
+  if (d.type === 'boolean') {
+    return prompts.confirm({ message: d.message, initialValue: def === undefined ? false : Boolean(def) })
+  }
+  if (d.type === 'select') {
+    return prompts.select({
+      message: d.message,
+      options: (d.choices ?? []).map((c) => ({ value: c, label: c })),
+      initialValue: def as string | undefined
+    }) as Promise<string | symbol>
+  }
+  const fallback = def === undefined ? undefined : String(def)
+  return prompts.text({
+    message: d.message,
+    placeholder: fallback,
+    defaultValue: fallback,
+    // When a default exists, an empty submit means "use the default" — don't run validation on it,
+    // otherwise a rule like the port check would reject pressing Enter to accept 3000.
+    validate: d.validate ? (value) => (!value && fallback !== undefined ? undefined : d.validate!(value ?? '')) : undefined
+  }) as Promise<string | symbol>
+}
+
+function printHelp(template: TemplateConfig<any>): void {
+  const lines: string[] = []
+  if (template.about?.name) lines.push(template.about.name)
+  if (template.about?.description) lines.push(template.about.description)
+  lines.push('', 'Options:', '  --directory <dir>      Where to scaffold')
+  for (const d of template.options) {
+    const hint =
+      d.type === 'select' && d.choices ? ` <${d.choices.join('|')}>` : d.type === 'boolean' ? ` / --no-${d.key}` : ' <value>'
+    lines.push(`  --${d.key}${hint}      ${d.message}`)
+  }
+  console.log(lines.join('\n'))
+}
+
+/** `git init` + an initial commit, unless the target is already inside a git repo. */
+function initGit(dir: string): void {
+  try {
+    execFileSync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: dir, stdio: 'ignore' })
+    return // already inside a repo — leave it alone
+  } catch {
+    // not a repo: fall through and initialize one
+  }
+  try {
+    execFileSync('git', ['init'], { cwd: dir, stdio: 'ignore' })
+    execFileSync('git', ['add', '-A'], { cwd: dir, stdio: 'ignore' })
+
+    // Supply a fallback identity only when the environment has none, so the initial commit never fails
+    // on a freshly-set-up machine without overriding a user's configured name/email.
+    let identity: string[] = []
+    try {
+      execFileSync('git', ['config', 'user.email'], { cwd: dir, stdio: 'ignore' })
+    } catch {
+      identity = ['-c', 'user.name=create', '-c', 'user.email=create@users.noreply.github.com']
+    }
+    execFileSync('git', [...identity, 'commit', '-m', 'feat: initialize project', '--no-gpg-sign'], { cwd: dir, stdio: 'ignore' })
+  } catch {
+    // git is optional; never fail the scaffold over it
+  }
+}
+
+/**
+ * Run a template as an interactive CLI: resolve options from flags + prompts, scaffold the file tree,
+ * run its post-scaffold scripts, and (unless disabled) initialize a git repo. Returns the exit status
+ * (0 success, 1 error, 2 cancelled).
+ */
+export async function runTemplateCLI<O>(template: TemplateConfig<O>): Promise<number> {
+  const argv = process.argv.slice(2)
+
+  if (argv.includes('--help') || argv.includes('-h')) {
+    printHelp(template)
+    return 0
+  }
+
+  const interactive = Boolean(process.stdout.isTTY) && !argv.includes('--no-interactive')
+  const { values, directory: dirArg } = parseArgv(argv, template.options)
+
+  prompts.intro(template.about?.name ?? 'create')
+
+  // Resolve the target directory.
+  let directory = dirArg
+  if (!directory) {
+    if (interactive) {
+      const answer = await prompts.text({ message: 'Where should we create your project?', placeholder: 'my-app', defaultValue: 'my-app' })
+      if (prompts.isCancel(answer)) {
+        prompts.cancel('Cancelled.')
+        return 2
+      }
+      directory = answer || 'my-app'
+    } else {
+      directory = 'my-app'
+    }
+  }
+
+  // Resolve options in declaration order so later defaults can read earlier answers.
+  const options: Record<string, unknown> = {}
+  for (const d of template.options) {
+    const def = resolveDefault(d, options as Partial<O>, directory)
+
+    if (d.key in values) {
+      const value = values[d.key]!
+      if (d.validate && typeof value === 'string') {
+        const error = d.validate(value)
+        if (error) {
+          prompts.cancel(`Invalid --${d.key}: ${error}`)
+          return 1
+        }
+      }
+      options[d.key] = value
+      continue
+    }
+
+    if (interactive) {
+      const answer = await promptForOption(d, def)
+      if (prompts.isCancel(answer)) {
+        prompts.cancel('Cancelled.')
+        return 2
+      }
+      // An empty text submit falls back to the default (e.g. accepting the placeholder port).
+      options[d.key] = answer === '' && def !== undefined ? def : answer
+    } else {
+      options[d.key] = def
+    }
+  }
+
+  const creation = await template.produce({ options: options as O })
+
+  writeTree(creation.files, directory)
+
+  if (creation.scripts?.length) {
+    for (const step of [...creation.scripts].sort((a, b) => a.phase - b.phase)) {
+      for (const command of step.commands) {
+        execFileSync(command, { cwd: directory, stdio: 'inherit', shell: true })
+      }
+    }
+  }
+
+  if (template.git !== false) initGit(directory)
+
+  if (creation.suggestions?.length) {
+    prompts.note(creation.suggestions.join('\n'), 'Next steps')
+  }
+  prompts.outro('Done!')
+  return 0
 }

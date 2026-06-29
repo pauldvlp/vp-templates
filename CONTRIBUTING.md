@@ -150,8 +150,10 @@ A typical loop: edit → `pnpm changeset` → commit → when ready, `pnpm versi
 
 ## Adding a new template
 
-1. `mkdir packages/<gen>` — a Bingo generator (copy `vp-react-ts-shadcn`'s shape: `bin/`, `src/template.ts`,
-   `template/`, a `build` script bundling to `dist/index.js`, and `bingo` as a dependency).
+1. `mkdir packages/<gen>` — a generator (copy `vp-react-ts-shadcn`'s shape: `bin/`, `src/template.ts`,
+   `template/`, a `build` script bundling to `dist/index.js`). Define the template with `defineTemplate`
+   from `@pauldvlp/template-kit` and run it from `bin/` via that package's `runTemplateCLI`; declare
+   `@pauldvlp/template-kit` (workspace, dev) and `@clack/prompts` as deps.
 2. Add an entry to `packages/create/package.json` → `createConfig.templates`:
    `{ "name": "vp-<x>", "description": "...", "template": "@pauldvlp/vp-<x>", "monorepo": true | omit }`
    — `monorepo: true` for new-project scaffolds; omit for "add into an existing repo" generators.

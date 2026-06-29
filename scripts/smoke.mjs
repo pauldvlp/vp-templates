@@ -27,7 +27,7 @@ const cases = [
       // port substitution
       assert.match(files.apps.web['vite.config.ts'], /localhost:4000/, 'web proxies to apiPort')
       assert.match(files.apps.web['vite.config.ts'], /port: 4100/, 'web dev server uses webPort')
-      assert.match(files.apps.api.src.config['env.ts'], /default\(4000\)/, 'api PORT default uses apiPort')
+      assert.match(files.apps.api.src.config['env.ts'], /z\.coerce\.number\(\), 4000\)/, 'api PORT default uses apiPort')
       // pino middleware uses the Express-5-safe named wildcard (no path-to-regexp warning)
       assert.match(files.apps.api.src['app.module.ts'], /forRoutes: \['\*path'\]/, 'pino forRoutes uses *path')
       // swagger off: markers stripped, dep absent
@@ -82,7 +82,7 @@ const cases = [
     pkg: 'vp-pkg-shadcn',
     options: { scope: '@acme', base: 'base', preset: 'vega', iconLibrary: 'lucide', cssVariables: true, rtl: false, pointer: false, components: 'button,badge,card', install: true },
     expect(files) {
-      // Add-into-existing: emits the UI package contents at the ROOT of the tree (Bingo nests them
+      // Add-into-existing: emits the UI package contents at the ROOT of the tree (the runtime nests them
       // under the chosen --directory). No `packages/ui` wrapper, no apps, no root-monorepo package.json.
       assert.ok(!files.packages, 'does not nest under packages/* (would double to packages/ui/packages/ui)')
       assert.ok(!files.apps, 'does not emit apps')
