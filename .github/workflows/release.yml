@@ -1,16 +1,20 @@
 name: Release
 
-# Changesets-driven release that creates git tags + GitHub Releases only — it never publishes to a
-# package registry (no npm/2FA involved).
+# Changesets-driven release that publishes to npm and creates git tags + GitHub Releases.
+#
+# Auth: npm trusted publishing via OIDC (no tokens). The job runs in the `release` GitHub Environment
+# and requests `id-token: write`; each package has a Trusted Publisher on npmjs pinned to this repo +
+# `release.yml` + the `release` environment, so npm mints a short-lived credential at publish time and
+# attaches provenance automatically.
 #
 # Flow:
 #   1. Land changesets on `main` (via PRs). This workflow opens/updates a "Version Packages" PR that
 #      applies them: bumps versions and rewrites each package's CHANGELOG.
-#   2. Merge that PR. With no changesets left, the workflow runs `changeset tag`, which creates a git
-#      tag per public package at its current version; the action pushes those tags and opens a GitHub
-#      Release for each, with notes taken from the package's CHANGELOG entry.
+#   2. Merge that PR. With no changesets left, the workflow runs `changeset publish`, which publishes
+#      each public package to npm (OIDC) and creates a git tag per package; the action also opens a
+#      GitHub Release per tag from the CHANGELOGs.
 #
-# (template-kit is `private`, so it is never tagged or released.)
+# (template-kit is `private`, so it is never published, tagged, or released.)
 
 on:
   push:
@@ -24,11 +28,15 @@ concurrency:
 permissions:
   contents: write # push the Version PR branch, create + push tags, create GitHub Releases
   pull-requests: write # open/update the "Version Packages" PR
+  id-token: write # mint the OIDC token npm trusted publishing exchanges for a publish credential
 
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Matches the `release` environment pinned in each package's npm Trusted Publisher; restrict its
+    # deployment branches to `main` in the environment settings for defense in depth.
+    environment: release
     steps:
       - uses: actions/checkout@v5
         with:
@@ -40,19 +48,24 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: 24 # >= 22.14, required for npm OIDC trusted publishing
+          registry-url: https://registry.npmjs.org # writes the base .npmrc npm publishes against
           cache: pnpm
+
+      # npm OIDC trusted publishing needs npm >= 11.5.1; Node 24 ships an older npm, so upgrade it.
+      # `changeset publish` shells out to this npm, which performs the OIDC exchange + provenance.
+      - run: npm install -g npm@latest
 
       - run: pnpm install --frozen-lockfile
 
-      # Gate: don't tag/release a broken tree.
+      # Gate: don't publish/tag a broken tree.
       - run: pnpm smoke
 
       - uses: changesets/action@v1
         with:
           version: pnpm exec changeset version
-          # No registry publish: just create the git tags for the current versions. The action pushes
-          # them and creates a GitHub Release per tag from the CHANGELOGs.
-          publish: pnpm exec changeset tag
+          # Publish each public package to npm (OIDC, provenance automatic) and create its git tag +
+          # GitHub Release. Runs only once no changesets remain (i.e. after the Version PR is merged).
+          publish: pnpm exec changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
