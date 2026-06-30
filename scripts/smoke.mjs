@@ -7,7 +7,7 @@
 import assert from 'node:assert'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const OUT = path.join(ROOT, '.smoke')
@@ -118,7 +118,7 @@ function write(node, dir) {
 fs.rmSync(OUT, { recursive: true, force: true })
 let failed = 0
 for (const c of cases) {
-  const { default: template } = await import(path.join(ROOT, 'packages', c.pkg, 'src', 'template.ts'))
+  const { default: template } = await import(pathToFileURL(path.join(ROOT, 'packages', c.pkg, 'src', 'template.ts')))
   try {
     const { files, scripts } = await template.produce({ options: c.options })
     c.expect(files)
