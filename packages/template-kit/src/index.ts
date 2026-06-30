@@ -7,11 +7,17 @@ import * as prompts from '@clack/prompts'
 /** Nested `files` shape: a directory is an object, a file is its string content. */
 export type Tree = { [name: string]: string | Tree }
 
-// Files shipped with a leading underscore so `npm publish` doesn't mangle dotfiles.
+// Template files shipped under a leading-underscore alias, restored to their real name on scaffold.
+// Two reasons: `npm publish` mangles dotfiles (`.gitignore` → `.npmignore` semantics), and a literal
+// `package.json` anywhere in the published tarball makes supply-chain scanners (Socket, etc.) resolve
+// the *scaffolded app's* dependency tree and mis-attribute its alerts to this generator. Shipping the
+// skeleton's manifests as `_package.json` keeps them inert data; `readTree` renames them back so the
+// generated project still gets a real `package.json`.
 export const RENAME: Record<string, string> = {
   _gitignore: '.gitignore',
   _dockerignore: '.dockerignore',
-  '_env.example': '.env.example'
+  '_env.example': '.env.example',
+  '_package.json': 'package.json'
 }
 
 // shadcn's curated "radix-nova" theme (neutral base, yellow accent, Space Grotesk / Outfit,
