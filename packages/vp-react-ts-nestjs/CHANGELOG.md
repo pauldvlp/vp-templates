@@ -1,5 +1,11 @@
 # @pauldvlp/vp-react-ts-nestjs
 
+## 0.2.3
+
+### Patch Changes
+
+- 39ba087: Fix the scripts table column widths in the scaffolded project's README so a fresh `vp check` passes without reformatting.
+
 ## 0.2.2
 
 ### Patch Changes
