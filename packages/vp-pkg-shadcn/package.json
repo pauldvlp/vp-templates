@@ -1,6 +1,6 @@
 {
   "name": "@pauldvlp/vp-pkg-shadcn",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "Add a shared, fully customizable shadcn UI package (packages/ui) into an existing Vite+ monorepo, themeable via shadcn presets.",
   "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
   "license": "MIT",
