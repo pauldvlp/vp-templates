@@ -30,6 +30,17 @@ const cases = [
   {
     pkg: 'vp-react-ts-nestjs',
     options: { name: 'acme', scope: '@acme', apiPort: '3000', webPort: '5173', swagger: true, serveWeb: true, docker: true, install: true }
+  },
+  {
+    pkg: 'vp-react-ts-hono',
+    options: { name: 'acme', scope: '@acme', apiPort: '3000', webPort: '5173', openapi: true, serveWeb: true, docker: true, install: true }
+  },
+  {
+    pkg: 'vp-pkg-shadcn',
+    options: {
+      scope: '@acme', base: 'base', preset: 'vega', iconLibrary: 'lucide',
+      cssVariables: true, rtl: false, pointer: false, components: 'button,badge,card', install: true
+    }
   }
 ]
 

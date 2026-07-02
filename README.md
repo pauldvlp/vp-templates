@@ -27,6 +27,7 @@ packages/
 ├── template-kit/           → @pauldvlp/template-kit        private shared helpers + CLI runtime (bundled into each generator)
 ├── vp-react-ts-shadcn/     → @pauldvlp/vp-react-ts-shadcn  generator: website app + shadcn ui
 ├── vp-react-ts-nestjs/     → @pauldvlp/vp-react-ts-nestjs  generator: React web app + NestJS api + Zod contracts
+├── vp-react-ts-hono/       → @pauldvlp/vp-react-ts-hono    generator: React web app + Hono api + Zod contracts
 └── vp-pkg-shadcn/          → @pauldvlp/vp-pkg-shadcn       generator: add packages/ui into an existing repo
 ```
 
