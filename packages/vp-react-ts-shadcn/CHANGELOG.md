@@ -1,5 +1,11 @@
 # @pauldvlp/vp-react-ts-shadcn
 
+## 0.5.3
+
+### Patch Changes
+
+- 8cfd18d: Unify TypeScript on a single major per scaffolded repo: resolve `typescript` and `@types/node` from the workspace catalog (`^5` / `^24`) in the web/ui apps instead of hardcoding `~6.0.2`/`^24.13.2`. Previously a generated monorepo mixed TS 6 (apps) with TS 5 (api/contracts).
+
 ## 0.5.2
 
 ### Patch Changes

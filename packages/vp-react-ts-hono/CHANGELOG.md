@@ -1,5 +1,15 @@
 # @pauldvlp/vp-react-ts-hono
 
+## 0.2.0
+
+### Minor Changes
+
+- 8cfd18d: Wire up the built-in Vitest runner: add a `test` script (`vp test`) and gate it in `ready`. Hono ships a smoke test over the shared Zod contracts; NestJS's `ItemsService` spec is now runnable (it was missing `import 'reflect-metadata'`, without which the DI container fails to compile).
+
+### Patch Changes
+
+- 8cfd18d: Unify TypeScript on a single major per scaffolded repo: resolve `typescript` and `@types/node` from the workspace catalog (`^5` / `^24`) in the web/ui apps instead of hardcoding `~6.0.2`/`^24.13.2`. Previously a generated monorepo mixed TS 6 (apps) with TS 5 (api/contracts).
+
 ## 0.1.0
 
 ### Minor Changes
