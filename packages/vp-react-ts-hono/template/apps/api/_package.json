@@ -1,0 +1,26 @@
+{
+  "name": "@app/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite-node --watch src/main.ts",
+    "build": "vp build",
+    "start": "node dist/main.js",
+    "lint": "vp lint",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "@app/contracts": "workspace:*",
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-node": "^6",
+    "vite-plus": "catalog:"
+  }
+}

@@ -32,6 +32,12 @@
         "monorepo": true
       },
       {
+        "name": "vp-react-ts-hono",
+        "description": "Vite+ monorepo — React web app + Hono api (conformed to Vite+) sharing Zod contracts",
+        "template": "@pauldvlp/vp-react-ts-hono",
+        "monorepo": true
+      },
+      {
         "name": "vp-pkg-shadcn",
         "description": "Add a shared shadcn UI package (packages/ui) into an existing monorepo (themeable via shadcn presets)",
         "template": "@pauldvlp/vp-pkg-shadcn"

@@ -1,0 +1,44 @@
+{
+  "name": "@pauldvlp/vp-react-ts-hono",
+  "version": "0.0.0",
+  "description": "Vite+ monorepo template: a React web app + a Hono api (conformed to the Vite+ toolchain) sharing Zod contracts.",
+  "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
+  "license": "MIT",
+  "homepage": "https://github.com/pauldvlp/vp-templates",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pauldvlp/vp-templates.git",
+    "directory": "packages/vp-react-ts-hono"
+  },
+  "bugs": "https://github.com/pauldvlp/vp-templates/issues",
+  "keywords": [
+    "vite-plus-generator",
+    "vite-plus",
+    "hono",
+    "react",
+    "template"
+  ],
+  "bin": "./dist/index.js",
+  "type": "module",
+  "files": [
+    "dist",
+    "template"
+  ],
+  "scripts": {
+    "build": "esbuild bin/index.ts --bundle --outfile=dist/index.js --format=esm --platform=node --target=node22 --packages=external",
+    "dev": "node bin/index.ts",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.6.0"
+  },
+  "devDependencies": {
+    "@pauldvlp/template-kit": "workspace:*",
+    "@types/node": "^24",
+    "esbuild": "^0.25.0",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

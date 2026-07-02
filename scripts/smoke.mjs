@@ -66,6 +66,56 @@ const cases = [
     }
   },
   {
+    pkg: 'vp-react-ts-hono',
+    options: { name: 'acme', scope: '@acme', apiPort: '4000', webPort: '4100', openapi: false, serveWeb: false, docker: false, install: true },
+    expect(files) {
+      assert.equal(JSON.parse(files['package.json']).name, 'acme', 'root package name')
+      assert.equal(JSON.parse(files.apps.api['package.json']).name, '@acme/api', 'api package name')
+      assert.equal(JSON.parse(files.apps.web['package.json']).name, '@acme/web', 'web package name')
+      assert.equal(JSON.parse(files.packages.contracts['package.json']).name, '@acme/contracts', 'contracts package name')
+      // scope rewrite reaches source imports on both ends
+      assert.match(files.apps.api.src.routes['items.ts'], /@acme\/contracts/, 'api imports scoped contracts')
+      assert.match(files.apps.web.src['App.tsx'], /@acme\/contracts/, 'web imports scoped contracts')
+      // port substitution
+      assert.match(files.apps.web['vite.config.ts'], /localhost:4000/, 'web proxies to apiPort')
+      assert.match(files.apps.web['vite.config.ts'], /port: 4100/, 'web dev server uses webPort')
+      assert.match(files.apps.api.src['env.ts'], /z\.coerce\.number\(\), 4000\)/, 'api PORT default uses apiPort')
+      // openapi off: markers stripped, dep absent, doc module dropped
+      assert.doesNotMatch(files.apps.api.src['app.ts'], /__OPENAPI/, 'openapi markers stripped when off')
+      assert.doesNotMatch(files.apps.api.src['app.ts'], /swaggerUI/, 'no swagger code when off')
+      assert.ok(!files.apps.api.src['openapi.ts'], 'openapi.ts dropped when off')
+      assert.ok(!JSON.parse(files.apps.api['package.json']).dependencies['@hono/swagger-ui'], 'no swagger-ui dep when off')
+      // serveWeb off: markers stripped
+      assert.doesNotMatch(files.apps.api.src['app.ts'], /__SERVEWEB/, 'serveWeb markers stripped when off')
+      assert.doesNotMatch(files.apps.api.src['app.ts'], /serveStatic/, 'no serveStatic when off')
+      // docker off: no Dockerfile, no root .dockerignore
+      assert.ok(!files.apps.api['Dockerfile'], 'no Dockerfile when docker off')
+      assert.ok(!files['.dockerignore'], 'no root .dockerignore when docker off')
+      // dotfiles renamed for publish-safety
+      assert.ok(files.apps.api['.env.example'], '_env.example renamed to .env.example')
+    }
+  },
+  {
+    pkg: 'vp-react-ts-hono',
+    options: { name: 'acme', scope: '@acme', apiPort: '3000', webPort: '5173', openapi: true, serveWeb: true, docker: true, install: true },
+    expect(files) {
+      // openapi on: swaggerUI wired (docs + docs.json), dep added, doc module kept
+      assert.match(files.apps.api.src['app.ts'], /swaggerUI\(\{ url: '\/docs\.json' \}\)/, 'swagger UI wired when on')
+      assert.match(files.apps.api.src['app.ts'], /app\.get\('\/docs\.json'/, 'OpenAPI JSON route served when on')
+      assert.doesNotMatch(files.apps.api.src['app.ts'], /__OPENAPI/, 'no leftover openapi markers when on')
+      assert.ok(files.apps.api.src['openapi.ts'], 'openapi.ts kept when on')
+      assert.ok(JSON.parse(files.apps.api['package.json']).dependencies['@hono/swagger-ui'], 'swagger-ui dep added when on')
+      // serveWeb on: serveStatic wired with a cwd-independent absolute root, imports added
+      assert.match(files.apps.api.src['app.ts'], /serveStatic\(\{ root: join\(import\.meta\.dirname, '\.\.', '\.\.', 'web', 'dist'\) \}\)/, 'serveStatic wired with absolute root when on')
+      assert.match(files.apps.api.src['app.ts'], /from '@hono\/node-server\/serve-static'/, 'serveStatic import added when on')
+      assert.match(files.apps.api.src['app.ts'], /import \{ join \} from 'node:path'/, 'node:path join import added when on')
+      assert.doesNotMatch(files.apps.api.src['app.ts'], /__SERVEWEB/, 'no leftover serveWeb markers when on')
+      // docker on: Dockerfile + root .dockerignore emitted
+      assert.ok(files.apps.api['Dockerfile'], 'Dockerfile emitted when docker on')
+      assert.ok(files['.dockerignore'], 'root .dockerignore emitted when docker on')
+    }
+  },
+  {
     pkg: 'vp-react-ts-shadcn',
     options: { name: 'acme-web', scope: '@acme', base: 'base', preset: 'vega', iconLibrary: 'lucide', cssVariables: true, rtl: false, pointer: false, components: 'button,badge,card', install: true },
     expect(files) {
