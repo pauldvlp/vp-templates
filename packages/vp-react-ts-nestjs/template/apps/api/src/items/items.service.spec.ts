@@ -1,3 +1,5 @@
+import 'reflect-metadata'
+
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vite-plus/test'
 
