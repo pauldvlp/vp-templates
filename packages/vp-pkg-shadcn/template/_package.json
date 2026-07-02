@@ -11,7 +11,9 @@
   },
   "scripts": {
     "lint": "vp lint",
-    "check": "vp check"
+    "check": "vp check",
+    "test": "vp test",
+    "ready": "vp check && vp test"
   },
   "dependencies": {
     "@fontsource-variable/outfit": "^5.2.8",

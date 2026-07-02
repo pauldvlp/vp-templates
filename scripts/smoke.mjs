@@ -126,6 +126,10 @@ const cases = [
       const webDeps = JSON.parse(files.apps.website['package.json']).dependencies
       assert.ok(uiDeps['lucide-react'], 'ui has chosen icon lib')
       assert.ok(webDeps['lucide-react'], 'website has chosen icon lib')
+      // vp test wired at the root and gated in `ready`, with a cn smoke test shipped in the ui package
+      assert.match(files['package.json'], /"test": "vp test"/, 'root wires the vp test script')
+      assert.match(JSON.parse(files['package.json']).scripts.ready, /vp test/, 'ready gates vp test')
+      assert.ok(files.packages.ui.src.lib['cn.test.ts'], 'ui ships a cn smoke test')
     }
   },
   {
@@ -148,6 +152,10 @@ const cases = [
       assert.equal(uiPkg.devDependencies['vite-plus'], '^0.2.1', 'vite-plus resolved from catalog')
       assert.match(files['components.json'], /"style": "base-nova"/, 'components.json baked from base')
       assert.match(files['components.json'], /@acme\/ui\/components/, 'components.json aliases use the scope')
+      // vp test wired and gated in `ready`, with a cn smoke test shipped alongside the components
+      assert.match(files['package.json'], /"test": "vp test"/, 'wires the vp test script')
+      assert.match(uiPkg.scripts.ready, /vp test/, 'ready gates vp test')
+      assert.ok(files.src?.lib?.['cn.test.ts'], 'ships a cn smoke test')
     }
   }
 ]
