@@ -7,7 +7,8 @@
     "dev": "vp run @app/website#dev",
     "build": "vp run -r build",
     "check": "vp check",
-    "ready": "vp check && vp run -r build"
+    "test": "vp test",
+    "ready": "vp check && vp test && vp run -r build"
   },
   "devDependencies": {
     "babel-plugin-react-compiler": "catalog:",
