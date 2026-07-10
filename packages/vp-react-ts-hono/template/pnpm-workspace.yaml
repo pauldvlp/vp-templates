@@ -8,8 +8,8 @@ catalog:
   '@types/node': ^24
   typescript: ^5
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: 4.1.9
-  vite-plus: ^0.2.1
+  vitest: 4.1.10
+  vite-plus: ^0.2.4
   babel-plugin-react-compiler: ^1.0.0
   '@rolldown/plugin-babel': ^0.2.3
 overrides:

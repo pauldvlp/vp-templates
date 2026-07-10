@@ -27,7 +27,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
     "verdaccio": "^6.7.4",
-    "vitest": "^3"
+    "vitest": "^4"
   },
   "devEngines": {
     "packageManager": {

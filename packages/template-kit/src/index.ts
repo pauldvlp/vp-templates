@@ -29,8 +29,8 @@ export const DEFAULT_PRESET = 'b30557okNu'
 // purpose — hugeicons' icon set is huge and the wildcard barrel blows past Vite Task's run-cache
 // serialization limit.
 export const ICON_LIBS: Record<string, Record<string, string>> = {
-  hugeicons: { '@hugeicons/react': '^1.1.9', '@hugeicons/core-free-icons': '^4.2.1' },
-  lucide: { 'lucide-react': '^0' },
+  hugeicons: { '@hugeicons/react': '^1.1.9', '@hugeicons/core-free-icons': '^4.2.2' },
+  lucide: { 'lucide-react': '^1' },
   radix: { '@radix-ui/react-icons': '^1' },
   tabler: { '@tabler/icons-react': '^3' }
 }
@@ -42,8 +42,8 @@ export const CATALOG: Record<string, string> = {
   '@types/node': '^24',
   typescript: '^5',
   vite: 'npm:@voidzero-dev/vite-plus-core@latest',
-  vitest: '4.1.9',
-  'vite-plus': '^0.2.1',
+  vitest: '4.1.10',
+  'vite-plus': '^0.2.4',
   'babel-plugin-react-compiler': '^1.0.0',
   '@rolldown/plugin-babel': '^0.2.3'
 }
