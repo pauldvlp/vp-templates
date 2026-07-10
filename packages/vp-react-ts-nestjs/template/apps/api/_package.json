@@ -16,7 +16,7 @@
     "@nestjs/core": "^11",
     "@nestjs/platform-express": "^11",
     "nestjs-pino": "^4",
-    "pino-http": "^10",
+    "pino-http": "^11",
     "reflect-metadata": "^0.2",
     "rxjs": "^7.8",
     "zod": "^4.4.3"

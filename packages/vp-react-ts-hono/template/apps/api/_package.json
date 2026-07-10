@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@app/contracts": "workspace:*",
-    "@hono/node-server": "^1.14.0",
+    "@hono/node-server": "^2.0.0",
     "hono": "^4.9.0",
     "zod": "^4.4.3"
   },

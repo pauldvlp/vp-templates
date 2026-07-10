@@ -23,7 +23,7 @@ describe('vp-pkg-shadcn', () => {
     // catalog: specifiers must be resolved (no root catalog in a target repo).
     const allRanges = Object.values({ ...uiPkg.dependencies, ...uiPkg.devDependencies })
     expect(allRanges.some((r) => String(r).startsWith('catalog:'))).toBe(false)
-    expect(uiPkg.devDependencies['vite-plus']).toBe('^0.2.1')
+    expect(uiPkg.devDependencies['vite-plus']).toBe('^0.2.4')
     expect(files['components.json']).toMatch(/"style": "base-nova"/)
     expect(files['components.json']).toMatch(/@acme\/ui\/components/)
     // vp test wired and gated in `ready`, with a cn smoke test shipped alongside the components

@@ -106,7 +106,7 @@ export default defineTemplate<Options>({
     // When it's off, drop the generated doc module too — otherwise it's an unused, uncompiled file.
     if (options.openapi) {
       patchJson(files, 'apps/api/package.json', (pkg) => {
-        const deps = { ...pkg.dependencies, '@hono/swagger-ui': '^0.5.2' }
+        const deps = { ...pkg.dependencies, '@hono/swagger-ui': '^0.6.1' }
         pkg.dependencies = Object.fromEntries(Object.entries(deps).sort(([a], [b]) => a.localeCompare(b)))
       })
     } else {
