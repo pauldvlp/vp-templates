@@ -1,0 +1,35 @@
+name: Test
+
+# Fast generator unit tests: runs every package's __tests__/ (Vitest) against its produce() in memory
+# — no registry, npm install, or shadcn. Catches broken scope/name substitution and per-option wiring
+# on every push and PR. The heavier dependency-resolution gate lives in template-install.yml.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.9.0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test

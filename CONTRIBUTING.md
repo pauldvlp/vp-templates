@@ -34,7 +34,7 @@ Requirements: Node `>=22.18.0`, pnpm `11.9.0`, and the `vp` (Vite+) CLI installe
    git checkout -b fix/short-description   # or feat/…, docs/…, chore/…
    ```
 3. **Make your change** and keep it focused — one logical change per PR is easiest to review.
-4. **Test it** with the smoke tests (and Verdaccio for bigger changes) — see [Testing](#testing).
+4. **Test it** with `pnpm test` (and Verdaccio for bigger changes) — see [Testing](#testing).
 5. **Record a changeset** if you touched a publishable package — see [Changesets](#versioning--changelogs-changesets).
 6. **Commit and push** to your fork, then open a PR — see [Opening a pull request](#opening-a-pull-request).
 
@@ -52,14 +52,16 @@ Requirements: Node `>=22.18.0`, pnpm `11.9.0`, and the `vp` (Vite+) CLI installe
 
 ## Testing
 
-### 1. Fast inner loop — `pnpm smoke` (no registry, no install)
+### 1. Fast inner loop — `pnpm test` (no registry, no install)
 
-Runs each generator's `produce()` and asserts the emitted file tree, scope/name substitution, and
-per-option wiring. Use this constantly while editing a generator:
+Runs each generator's `produce()` (via Vitest) and asserts the emitted file tree, scope/name
+substitution, and per-option wiring. Each package's tests live next to it in `__tests__/`, so a
+template change only ever touches its own test file. Use this constantly while editing a generator:
 
 ```bash
+pnpm test                                          # all packages
 pnpm --filter @pauldvlp/vp-react-ts-shadcn build   # rebuild dist after editing src/
-pnpm smoke
+pnpm test:watch                                    # re-run on change while iterating
 ```
 
 You can also drive a generator's CLI directly into a throwaway dir (this still runs install + shadcn):
@@ -71,7 +73,7 @@ node packages/vp-react-ts-shadcn/dist/index.js \
 
 ### 1b. Real-install smoke — `pnpm smoke:install` (catches broken dep bumps)
 
-`pnpm smoke` only asserts the in-memory file tree; it never installs, so a bad version in
+`pnpm test` only asserts the in-memory file tree; it never installs, so a bad version in
 `template/**/package.json`, the template's `catalog:`, or `src/template.ts`'s `ICON_LIBS` map slips
 through. `pnpm smoke:install` scaffolds to disk and runs the generator's post-scaffold `pnpm install`
 against the real npm registry — the generated project has no lockfile and uses version *ranges*, so a
@@ -157,8 +159,10 @@ A typical loop: edit → `pnpm changeset` → commit → when ready, `pnpm versi
 2. Add an entry to `packages/create/package.json` → `createConfig.templates`:
    `{ "name": "vp-<x>", "description": "...", "template": "@pauldvlp/vp-<x>", "monorepo": true | omit }`
    — `monorepo: true` for new-project scaffolds; omit for "add into an existing repo" generators.
-3. Add a smoke case in `scripts/smoke.mjs` (assert the emitted tree + per-option wiring), and one in
-   `scripts/smoke-install.mjs` (so a real `pnpm install` of the scaffold is exercised).
+3. Add a test file at `packages/vp-<x>/__tests__/template.test.ts` (assert the emitted tree +
+   per-option wiring — import `produce` from `@pauldvlp/template-kit/testing` and your default
+   `template` export), and a case in `scripts/smoke-install.mjs` (so a real `pnpm install` of the
+   scaffold is exercised).
 4. `pnpm changeset` (new package = `minor`/`major`).
 
 See the [root README](./README.md) for the naming convention.
@@ -168,7 +172,7 @@ See the [root README](./README.md) for the naming convention.
 Logic common to the generators (file-tree building, shadcn `components.json`, `ICON_LIBS`, the
 `catalog:` resolver, shadcn `init` flags) lives in the **private** `@pauldvlp/template-kit` package.
 It is never published — each generator inlines it into its own `dist`. The mechanism: add it as a
-`workspace:*` devDependency (so `node bin/index.ts` and `pnpm smoke` resolve it), and add a
+`workspace:*` devDependency (so `node bin/index.ts` and `pnpm test` resolve it), and add a
 `tsconfig.json` `paths` entry pointing at its **source**:
 
 ```jsonc
@@ -184,7 +188,7 @@ and keep `CATALOG` in `template-kit/src/index.ts` in sync with the template `pnp
 ## Pull request checklist
 
 - [ ] Branch is up to date with `upstream/main`
-- [ ] `pnpm smoke` passes
+- [ ] `pnpm test` passes
 - [ ] Bigger changes tested via Verdaccio (`pnpm registry` + `pnpm publish:local` + `vp create @pauldvlp:...`)
 - [ ] A changeset was added (`pnpm changeset`) if a publishable package changed
 - [ ] PR description explains the change and links any related issue (`Closes #…`)

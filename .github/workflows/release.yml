@@ -59,7 +59,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Gate: don't publish/tag a broken tree.
-      - run: pnpm smoke
+      - run: pnpm test
 
       - uses: changesets/action@v1
         with:
