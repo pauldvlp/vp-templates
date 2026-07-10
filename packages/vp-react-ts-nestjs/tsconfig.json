@@ -16,5 +16,5 @@
       "@pauldvlp/template-kit": ["../template-kit/src/index.ts"]
     }
   },
-  "include": ["src", "bin"]
+  "include": ["src", "bin", "__tests__"]
 }

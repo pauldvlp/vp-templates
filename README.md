@@ -51,7 +51,7 @@ See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for the full workflow. In short:
 
 ```bash
 pnpm install
-pnpm smoke                      # fast: validate generator output (no registry/install)
+pnpm test                       # fast: validate generator output (no registry/install)
 
 # test the real `vp create` flow locally against a Verdaccio registry:
 pnpm registry                   # terminal A — local registry on :4873

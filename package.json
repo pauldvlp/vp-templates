@@ -14,7 +14,8 @@
   "bugs": "https://github.com/pauldvlp/vp-templates/issues",
   "scripts": {
     "build": "pnpm -r run build",
-    "smoke": "node scripts/smoke.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "smoke:install": "node scripts/smoke-install.mjs",
     "registry": "verdaccio --config verdaccio.yaml --listen 4873",
     "publish:local": "pnpm -r run build && pnpm -r publish --registry http://localhost:4873 --no-git-checks",
@@ -25,7 +26,8 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
-    "verdaccio": "^6.7.4"
+    "verdaccio": "^6.7.4",
+    "vitest": "^3"
   },
   "devEngines": {
     "packageManager": {
