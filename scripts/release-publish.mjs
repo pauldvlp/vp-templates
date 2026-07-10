@@ -9,26 +9,29 @@
 // real release (a merged "Version Packages" PR) publishes exactly as before, so the changesets action
 // still parses the "New tag:" lines it needs to create git tags + GitHub Releases.
 import { execFileSync, spawnSync } from 'node:child_process'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const PKGS = path.join(ROOT, 'packages')
 
-// Every non-private package under packages/* is publishable (template-kit is `private`).
+// Every non-private package under packages/* is publishable (template-kit is `private`). Keep each
+// manifest's path + verbatim source so we can restore it exactly after temporarily editing it below.
 const publishable = readdirSync(PKGS, { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => {
+    const file = path.join(PKGS, d.name, 'package.json')
     try {
-      return JSON.parse(readFileSync(path.join(PKGS, d.name, 'package.json'), 'utf8'))
+      const raw = readFileSync(file, 'utf8')
+      return { file, raw, pkg: JSON.parse(raw) }
     } catch {
       return null
     }
   })
-  .filter((pkg) => pkg && pkg.name && pkg.version && !pkg.private)
+  .filter((e) => e && e.pkg.name && e.pkg.version && !e.pkg.private)
 
-const unpublished = publishable.filter((pkg) => {
+const unpublished = publishable.filter(({ pkg }) => {
   // `npm view pkg@version version` prints the version when that exact version exists on npm, and
   // nothing (or an E404) when it doesn't.
   const res = spawnSync('npm', ['view', `${pkg.name}@${pkg.version}`, 'version'], { encoding: 'utf8' })
@@ -46,7 +49,23 @@ if (unpublished.length === 0) {
 }
 
 console.log(`Publishing ${unpublished.length} package(s) not yet on npm:`)
-for (const pkg of unpublished) console.log(`  - ${pkg.name}@${pkg.version}`)
-// Delegate the actual publish so the changesets action still sees the "New tag:" lines it parses to
-// create git tags + GitHub Releases. `changeset publish` skips packages already on npm on its own.
-execFileSync('pnpm', ['exec', 'changeset', 'publish'], { stdio: 'inherit' })
+for (const { pkg } of unpublished) console.log(`  - ${pkg.name}@${pkg.version}`)
+
+// `changeset publish` re-scans every public package and decides what to ship from its own `npm info`
+// read — we can't tell it "publish only these". When that read is stale, it re-attempts a version
+// that is actually already on npm, npm answers E403, and @changesets/cli@2.31.0 crashes in
+// isAlreadyPublishedError (`Cannot read properties of undefined (reading 'includes')`), failing the
+// run even though the genuinely-new packages published fine (this is exactly what sank Release #24).
+//
+// Since we already know the exact set to ship, hide every already-published package behind a
+// temporary `private: true` for the duration of the publish. changeset publish skips private packages
+// entirely (no npm info, no republish, no crash) while still emitting the "New tag:" lines the
+// changesets action parses to create git tags + GitHub Releases for the packages we do publish. The
+// edit is reverted in `finally`, and hidden packages are never packed, so nothing ships altered.
+const toHide = publishable.filter((e) => !unpublished.includes(e))
+for (const { file, pkg } of toHide) writeFileSync(file, `${JSON.stringify({ ...pkg, private: true }, null, 2)}\n`)
+try {
+  execFileSync('pnpm', ['exec', 'changeset', 'publish'], { stdio: 'inherit' })
+} finally {
+  for (const { file, raw } of toHide) writeFileSync(file, raw)
+}
