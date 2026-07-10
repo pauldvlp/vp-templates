@@ -10,9 +10,10 @@ name: Release
 # Flow:
 #   1. Land changesets on `main` (via PRs). This workflow opens/updates a "Version Packages" PR that
 #      applies them: bumps versions and rewrites each package's CHANGELOG.
-#   2. Merge that PR. With no changesets left, the workflow runs `changeset publish`, which publishes
-#      each public package to npm (OIDC) and creates a git tag per package; the action also opens a
-#      GitHub Release per tag from the CHANGELOGs.
+#   2. Merge that PR. With no changesets left, the workflow publishes each public package to npm (OIDC)
+#      and creates a git tag per package; the action also opens a GitHub Release per tag from the
+#      CHANGELOGs. Publishing goes through scripts/release-publish.mjs, which no-ops when every version
+#      is already on npm — so routine no-changeset merges don't trip changesets' republish crash.
 #
 # (template-kit is `private`, so it is never published, tagged, or released.)
 
@@ -66,6 +67,10 @@ jobs:
           version: pnpm exec changeset version
           # Publish each public package to npm (OIDC, provenance automatic) and create its git tag +
           # GitHub Release. Runs only once no changesets remain (i.e. after the Version PR is merged).
-          publish: pnpm exec changeset publish
+          # Wrapped in a guard: the action runs this on EVERY no-changeset push (routine test/ci/docs
+          # merges too), where a bare `changeset publish` misreads the registry, tries to republish
+          # existing versions, and crashes @changesets/cli. release-publish.mjs only delegates to
+          # `changeset publish` when a version is genuinely missing from npm, so those merges exit clean.
+          publish: node scripts/release-publish.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
