@@ -1,5 +1,11 @@
 # @pauldvlp/vp-react-ts-hono
 
+## 0.2.2
+
+### Patch Changes
+
+- 78f993f: Remove the unsupported `lint.options` (`typeAware`/`typeCheck`) block from every subpackage `vite.config.ts`. oxlint only honors these in the root config, so they were a no-op in `apps/*` and `packages/*`. The root config of each template keeps them.
+
 ## 0.2.1
 
 ### Patch Changes
