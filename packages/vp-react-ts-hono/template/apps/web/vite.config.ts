@@ -25,10 +25,6 @@ export default defineConfig({
       ],
       'vite-plus/prefer-vite-plus-imports': 'error'
     },
-    options: {
-      typeAware: true,
-      typeCheck: true
-    },
     jsPlugins: [
       {
         name: 'vite-plus',
