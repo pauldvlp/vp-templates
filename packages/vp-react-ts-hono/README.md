@@ -7,13 +7,17 @@
 A [Vite+](https://viteplus.dev) **monorepo generator** that scaffolds a full-stack workspace where the
 front-end and the back-end share one toolchain:
 
-- `apps/web` — a minimal React + Vite+ app that proxies `/api` to the server (no CORS)
+- `apps/web` — a minimal React + Vite+ app that calls the api through Hono's typed **RPC** client
+  (`hc<AppType>`) over a `/api` dev proxy (no CORS, no hand-written URLs)
 - `apps/api` — a [Hono](https://hono.dev) api conformed to Vite+ (plain TypeScript, no transform plugin)
-- `packages/contracts` — shared **Zod** schemas + inferred types, the single source of truth for both ends
+  that validates with `sValidator` and exports its `AppType` for the client
+- `packages/contracts` — shared **Zod** schemas + inferred types, the single source of truth for the data shapes
 
 Hono is plain TypeScript — no decorators, no metadata — so the api is a plain Vite+ package with zero
-wiring. Dev runs on `vite-node --watch`, the production build is a Vite SSR bundle (`dist/main.js`), and
-a single `vp check` / `vp test` / `vp run -r build` covers the whole workspace. It's the lightweight,
+wiring. The web and api are typed **end to end**: the api's route chain is exported as `AppType` and the
+web consumes it via `hc<AppType>`, so paths, params, request bodies and responses are all checked at
+compile time. Dev runs on `vite-node --watch`, the production build is a Vite SSR bundle (`dist/main.js`),
+and a single `vp check` / `vp test` / `vp run -r build` covers the whole workspace. It's the lightweight,
 edge-friendly counterpart to [`vp-react-ts-nestjs`](../vp-react-ts-nestjs).
 
 Options can be passed on the `vp create` command line (anything after `--`) or answered interactively.

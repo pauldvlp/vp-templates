@@ -1,6 +1,6 @@
 # __PROJECT_NAME__
 
-Monorepo full-stack basado en [Vite+](https://viteplus.dev): **una app web (React)** + un **api (Hono)** que comparten **contratos Zod**.
+Monorepo full-stack basado en [Vite+](https://viteplus.dev): **una app web (React)** + un **api (Hono)** conectados por el **RPC type-safe** de Hono, con **contratos Zod** compartidos.
 
 ```
 .
@@ -55,11 +55,38 @@ en `src/main.ts`.
 
 ## Contratos compartidos (`@app/contracts`)
 
-Los schemas Zod viven en `packages/contracts` y se importan desde ambos lados:
+Los schemas Zod viven en `packages/contracts` y son la única fuente de verdad de las **formas de datos**:
 
-- El **api** valida los bodies con un helper propio y mínimo, `parse()` (`apps/api/src/lib/validate.ts`),
-  que lanza un 400 con el error de Zod aplanado.
-- La **web** tipa sus `fetch` con los tipos inferidos (`Item`, `CreateItem`).
+- El **api** valida los bodies con `sValidator` (`@hono/standard-validator`) contra esos schemas. Va por
+  *Standard Schema*, así que los contratos en Zod Mini funcionan sin tocarlos y —a diferencia de un parse
+  a mano— el tipo del input entra en `AppType`, con lo que el cliente RPC comprueba el payload en compile-time.
+- La **web** no tipa `fetch` a mano: consume la API por el cliente RPC (ver abajo).
+
+## RPC type-safe (web ⇄ api)
+
+`apps/api/src/app.ts` registra las rutas en una expresión encadenada y exporta su tipo:
+
+```ts
+const api = new Hono().route('/health', health).route('/items', items)
+export const routes = app.route('/api', api)
+export type AppType = typeof routes
+```
+
+La **web** crea un cliente tipado con ese `AppType` y llama a la API sin URLs ni casts a mano — rutas,
+params, body y respuesta se infieren solos:
+
+```ts
+import { hc } from 'hono/client'
+import type { AppType } from '@app/api'
+
+const client = hc<AppType>('/') // `/api/*` va por el proxy de Vite+ en dev (mismo origen)
+const items = await (await client.api.items.$get()).json() //     Item[]
+await client.api.items.$post({ json: { name: 'Widget' } }) //     body chequeado en compile-time
+```
+
+Si renombras una ruta o cambias un contrato, el front **deja de compilar**: el cableado está tipado de
+punta a punta, no solo la forma del payload. (En un `$post`, el 201 y el 400 del validator forman una
+unión discriminada — estrecha con `res.ok` para quedarte con el tipo de éxito.)
 
 ## Configuración y logs
 
@@ -70,8 +97,10 @@ Los schemas Zod viven en `packages/contracts` y se importan desde ambos lados:
 <!-- OPENAPI:START -->
 ## OpenAPI + Swagger UI
 
-La documentación interactiva (Swagger UI) se sirve en <http://localhost:__API_PORT__/docs> y el
-documento OpenAPI en crudo en `/docs.json`. Con el api levantado (`vp run -r dev`), compruébalo:
+El RPC tipa el consumo interno web ⇄ api; **OpenAPI documenta la API para consumidores externos** (otros
+lenguajes, terceros). La documentación interactiva (Swagger UI) se sirve en
+<http://localhost:__API_PORT__/docs> y el documento OpenAPI en crudo en `/docs.json`. Con el api levantado
+(`vp run -r dev`), compruébalo:
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:__API_PORT__/docs       # 200
@@ -98,8 +127,10 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:__API_PORT__/         
 curl -s http://localhost:__API_PORT__/api/health                                  # {"status":"ok"}
 ```
 
-El montaje del estático está en `apps/api/src/app.ts`. La ruta al `dist` de la web se resuelve como
-**absoluta** a partir de `import.meta.dirname`, así que funciona sea cual sea el directorio de trabajo.
+El montaje del estático vive en `apps/api/src/main.ts` (el entrypoint de Node), no en `app.ts`: así
+`app.ts` queda libre de APIs de Node y su `AppType` se puede importar desde la web sin arrastrar tipos de
+Node al bundle del navegador. La ruta al `dist` de la web se resuelve como **absoluta** a partir de
+`import.meta.dirname`, así que funciona sea cual sea el directorio de trabajo.
 
 <!-- SERVEWEB:END -->
 <!-- DOCKER:START -->
@@ -121,5 +152,7 @@ de `pnpm deploy --filter @app/api --prod`.
 <!-- DOCKER:END -->
 ## Añadir un recurso
 
-Mira `apps/api/src/routes/items.ts` (rutas Hono con store en memoria) y `health.ts` como plantillas, y
-declara su contrato en `packages/contracts`.
+Mira `apps/api/src/routes/items.ts` (rutas Hono con store en memoria) y `health.ts` como plantillas,
+declara su contrato en `packages/contracts` y valida los bodies con `sValidator('json', schema)`. Encadena
+la ruta nueva en `app.ts` (`.route('/loquesea', loquesea)`) para que entre en `AppType` y el cliente RPC
+de la web la vea con tipos.
