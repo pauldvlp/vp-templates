@@ -1,8 +1,10 @@
 import { serve } from '@hono/node-server'
+// __SERVEWEB_IMPORT__
 
 import { app } from './app'
 import { env } from './env'
 
+// __SERVEWEB_STATIC__
 const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
   console.log(`api listening on http://localhost:${info.port}`)
 })

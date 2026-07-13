@@ -1,15 +1,24 @@
+import type { AppType } from '@app/api'
 import type { Item } from '@app/contracts'
+import { hc } from 'hono/client'
 import { useEffect, useState, type FormEvent } from 'react'
 
-// `/api/*` is proxied to the Hono server in dev (see vite.config.ts), so these are same-origin calls.
-const fetchItems = (): Promise<Item[]> => fetch('/api/items').then((res) => res.json())
+// Hono's typed RPC client: routes, params, request bodies and responses are all inferred from the api's
+// `AppType` (see apps/api/src/app.ts) — no hand-written URLs, no response casts. `/api/*` is proxied to
+// the Hono server in dev (see vite.config.ts), so a `/` base keeps these same-origin.
+const client = hc<AppType>('/')
 
-const createItem = (name: string): Promise<Item> =>
-  fetch('/api/items', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name })
-  }).then((res) => res.json())
+const fetchItems = async (): Promise<Item[]> => {
+  const res = await client.api.items.$get()
+  return res.json()
+}
+
+const createItem = async (name: string): Promise<Item> => {
+  // The 201 body and the validator's 400 form a discriminated union; narrow on `res.ok` to get `Item`.
+  const res = await client.api.items.$post({ json: { name } })
+  if (!res.ok) throw new Error('Failed to create item')
+  return res.json()
+}
 
 export const App = () => {
   const [items, setItems] = useState<Item[]>([])

@@ -30,9 +30,13 @@ const { name: pkgName, description: pkgDescription } = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 ) as { name: string; description: string };
 
-// The Hono app (apps/api/src/app.ts) ships with marker comments so the optional OpenAPI/Swagger UI and
-// static-serving features can be wired in (or stripped out) without keeping a second copy of the file.
+// The Hono files ship with marker comments so the optional features can be wired in (or stripped out)
+// without keeping a second copy: OpenAPI/Swagger UI in the app (apps/api/src/app.ts) and static file
+// serving in the Node entry (apps/api/src/main.ts). The static mount is deliberately kept OUT of app.ts
+// so its exported `AppType` stays free of Node-only APIs (node:path, import.meta.dirname) — apps/web
+// imports that type for the RPC client and would otherwise drag those into its browser typecheck.
 const APP_TS = path.join('apps', 'api', 'src', 'app.ts');
+const MAIN_TS = path.join('apps', 'api', 'src', 'main.ts');
 
 const OPENAPI_IMPORT = [
   "import { swaggerUI } from '@hono/swagger-ui'",
@@ -47,10 +51,11 @@ const SERVEWEB_IMPORT = [
   "import { join } from 'node:path'",
   "import { serveStatic } from '@hono/node-server/serve-static'",
 ].join('\n');
-// Registered AFTER the /api routes so those take precedence. `root` is an ABSOLUTE path derived from the
-// running file (`import.meta.dirname`), so it's correct regardless of the process cwd — `vp run
-// @app/api#start` runs from apps/api, the Dockerfile from the repo root. Both apps/api/src (dev) and
-// apps/api/dist (the prod SSR bundle) sit two levels under apps/, so ../../web/dist is apps/web/dist.
+// Mounted in the Node entry (main.ts), after `app` is imported so the /api routes it already carries take
+// precedence over the static catch-all. `root` is an ABSOLUTE path from the running file
+// (`import.meta.dirname`), so it's cwd-independent — `vp run @app/api#start` runs from apps/api, the
+// Dockerfile from the repo root. main.ts sits at apps/api/src (dev) / apps/api/dist (prod SSR bundle),
+// two levels under apps/, so ../../web/dist is apps/web/dist.
 const SERVEWEB_STATIC =
   "app.use('/*', serveStatic({ root: join(import.meta.dirname, '..', '..', 'web', 'dist') }))";
 
@@ -149,14 +154,17 @@ export default defineTemplate<Options>({
         .split('__WEB_PORT__')
         .join(options.webPort);
 
-      // Wire (or strip) the optional OpenAPI/Swagger UI and static-serving features in the Hono app.
+      // Wire (or strip) the optional OpenAPI/Swagger UI markers in the Hono app.
       if (rel === APP_TS) {
         out = options.openapi
           ? out
               .replace('// __OPENAPI_IMPORT__', OPENAPI_IMPORT)
               .replace('// __OPENAPI_SETUP__', OPENAPI_SETUP)
           : out.replace(/^[ \t]*\/\/ __OPENAPI_[A-Z_]+__\n/gm, '');
+      }
 
+      // Wire (or strip) the optional static-serving markers in the Node entry (kept out of app.ts).
+      if (rel === MAIN_TS) {
         out = options.serveWeb
           ? out
               .replace('// __SERVEWEB_IMPORT__', SERVEWEB_IMPORT)

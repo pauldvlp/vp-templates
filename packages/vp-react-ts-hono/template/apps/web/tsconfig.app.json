@@ -24,6 +24,7 @@
     /* Aliases */
     "paths": {
       "@app/web/*": ["./src/*"],
+      "@app/api": ["../api/src/app.ts"],
       "@app/contracts": ["../../packages/contracts/src/index.ts"]
     }
   },

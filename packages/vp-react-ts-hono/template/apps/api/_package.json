@@ -13,6 +13,7 @@
   "dependencies": {
     "@app/contracts": "workspace:*",
     "@hono/node-server": "^2.0.0",
+    "@hono/standard-validator": "^0.2.3",
     "hono": "^4.9.0",
     "zod": "^4.4.3"
   },

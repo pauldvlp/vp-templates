@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@app/contracts": "workspace:*",
+    "hono": "^4.9.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@app/api": "workspace:*",
     "@rolldown/plugin-babel": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "^19.2.17",

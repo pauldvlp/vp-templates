@@ -24,6 +24,21 @@ describe('vp-react-ts-hono — openapi/serveWeb/docker off', () => {
     // scope rewrite reaches source imports on both ends
     expect(files.apps.api.src.routes['items.ts']).toMatch(/@acme\/contracts/);
     expect(files.apps.web.src['App.tsx']).toMatch(/@acme\/contracts/);
+    // RPC wiring: api exports AppType + validates with sValidator; web consumes it via hc, no raw fetch
+    expect(files.apps.api.src['app.ts']).toMatch(/export type AppType = typeof routes/);
+    expect(files.apps.api.src.routes['items.ts']).toMatch(/sValidator\('json', createItemSchema\)/);
+    expect(
+      JSON.parse(files.apps.api['package.json']).dependencies['@hono/standard-validator'],
+    ).toBeTruthy();
+    expect(files.apps.web.src['App.tsx']).toMatch(/hc<AppType>/);
+    expect(files.apps.web.src['App.tsx']).toMatch(/from '@acme\/api'/);
+    expect(files.apps.web.src['App.tsx']).not.toMatch(/fetch\('\/api/);
+    expect(JSON.parse(files.apps.web['package.json']).devDependencies['@acme/api']).toBe(
+      'workspace:*',
+    );
+    expect(JSON.parse(files.apps.web['package.json']).dependencies.hono).toBeTruthy();
+    // the hand-rolled validate bridge is gone
+    expect(files.apps.api.src.lib).toBeUndefined();
     // port substitution
     expect(files.apps.web['vite.config.ts']).toMatch(/localhost:4000/);
     expect(files.apps.web['vite.config.ts']).toMatch(/port: 4100/);
@@ -35,8 +50,9 @@ describe('vp-react-ts-hono — openapi/serveWeb/docker off', () => {
     expect(
       JSON.parse(files.apps.api['package.json']).dependencies['@hono/swagger-ui'],
     ).toBeUndefined();
-    // serveWeb off: markers stripped
-    expect(files.apps.api.src['app.ts']).not.toMatch(/__SERVEWEB/);
+    // serveWeb off: markers stripped from the Node entry (main.ts); app.ts never carries the static mount
+    expect(files.apps.api.src['main.ts']).not.toMatch(/__SERVEWEB/);
+    expect(files.apps.api.src['main.ts']).not.toMatch(/serveStatic/);
     expect(files.apps.api.src['app.ts']).not.toMatch(/serveStatic/);
     // docker off: no Dockerfile, no root .dockerignore
     expect(files.apps.api['Dockerfile']).toBeUndefined();
@@ -67,13 +83,16 @@ describe('vp-react-ts-hono — openapi/serveWeb/docker on', () => {
     expect(
       JSON.parse(files.apps.api['package.json']).dependencies['@hono/swagger-ui'],
     ).toBeTruthy();
-    // serveWeb on: serveStatic wired with a cwd-independent absolute root, imports added
-    expect(files.apps.api.src['app.ts']).toMatch(
+    // serveWeb on: serveStatic wired into the Node entry (main.ts), cwd-independent root — kept OUT of
+    // app.ts so its exported AppType stays Node-free for the web's RPC import
+    expect(files.apps.api.src['main.ts']).toMatch(
       /serveStatic\(\{ root: join\(import\.meta\.dirname, '\.\.', '\.\.', 'web', 'dist'\) \}\)/,
     );
-    expect(files.apps.api.src['app.ts']).toMatch(/from '@hono\/node-server\/serve-static'/);
-    expect(files.apps.api.src['app.ts']).toMatch(/import \{ join \} from 'node:path'/);
-    expect(files.apps.api.src['app.ts']).not.toMatch(/__SERVEWEB/);
+    expect(files.apps.api.src['main.ts']).toMatch(/from '@hono\/node-server\/serve-static'/);
+    expect(files.apps.api.src['main.ts']).toMatch(/import \{ join \} from 'node:path'/);
+    expect(files.apps.api.src['main.ts']).not.toMatch(/__SERVEWEB/);
+    expect(files.apps.api.src['app.ts']).not.toMatch(/serveStatic/);
+    expect(files.apps.api.src['app.ts']).not.toMatch(/node:path/);
     // docker on: Dockerfile + root .dockerignore emitted
     expect(files.apps.api['Dockerfile']).toBeTruthy();
     expect(files['.dockerignore']).toBeTruthy();
