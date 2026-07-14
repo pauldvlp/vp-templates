@@ -16,7 +16,8 @@
     "@clack/prompts": "^1.7.0"
   },
   "devDependencies": {
-    "vitest": "^4"
+    "vitest": "^4",
+    "@types/node": "^24"
   },
   "engines": {
     "node": ">=22.18.0"
