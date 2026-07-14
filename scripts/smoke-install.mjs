@@ -61,8 +61,9 @@ function write(node, dir) {
 function run(argv, cwd) {
   const [program, ...args] = argv
   console.log(`  $ ${argv.join(' ')}`)
-  // Mirror the real runtime: emitted scripts are argv arrays run with no shell.
-  execFileSync(program, args, { cwd, stdio: 'inherit' })
+  // Mirror the real runtime: emitted scripts are argv arrays run with no shell — except on Windows,
+  // where pnpm/npm are PATH-resolved .cmd shims that execFileSync can't spawn without one.
+  execFileSync(program, args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' })
 }
 
 fs.rmSync(OUT, { recursive: true, force: true })
