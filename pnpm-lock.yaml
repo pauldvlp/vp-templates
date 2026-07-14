@@ -225,6 +225,9 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0
     devDependencies:
+      '@types/node':
+        specifier: ^24
+        version: 24.13.2
       vitest:
         specifier: ^4
         version: 4.1.10(@types/node@24.13.2)(vite@7.3.6(@types/node@24.13.2))
