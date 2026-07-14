@@ -13,7 +13,7 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const OUT = path.join(ROOT, '.smoke-install')
@@ -71,7 +71,7 @@ for (const c of cases) {
   const dir = path.join(OUT, c.pkg)
   console.log(`\n▶ ${c.pkg} (${FULL ? 'full: install + shadcn + build' : 'install only'})`)
   try {
-    const { default: template } = await import(path.join(ROOT, 'packages', c.pkg, 'src', 'template.ts'))
+    const { default: template } = await import(pathToFileURL(path.join(ROOT, 'packages', c.pkg, 'src', 'template.ts')))
     const { files, scripts } = await template.produce({ options: c.options })
     write(files, dir)
 
