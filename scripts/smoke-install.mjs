@@ -62,7 +62,8 @@ function run(argv, cwd) {
   const [program, ...args] = argv
   console.log(`  $ ${argv.join(' ')}`)
   // Mirror the real runtime: emitted scripts are argv arrays run with no shell.
-  execFileSync(program, args, { cwd, stdio: 'inherit' })
+  // When use `execFileSync` on windows,  value of program variable is first command name like a `pnpm` not a path. so enable shell option on windows 
+  execFileSync(program, args, { cwd, stdio: 'inherit',shell:process.platform === "win32" })
 }
 
 fs.rmSync(OUT, { recursive: true, force: true })
