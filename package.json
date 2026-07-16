@@ -15,6 +15,7 @@
   "scripts": {
     "prepare": "husky",
     "build": "pnpm -r run build",
+    "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke:install": "node scripts/smoke-install.mjs",
