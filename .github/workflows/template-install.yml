@@ -27,18 +27,25 @@ concurrency:
   group: template-install-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   install-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
-          version: 11.9.0
+          node-version: 24
 
-      - uses: actions/setup-node@v6
+      # pnpm comes from corepack, pinned by `packageManager`. The second setup-node
+      # wires up the store cache, which needs pnpm on PATH already.
+      - run: corepack enable
+
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
