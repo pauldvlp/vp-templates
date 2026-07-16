@@ -1,0 +1,64 @@
+name: Bug report
+description: A generator fails, or the project it generates is broken.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bugs in the tools a template wires up (Vite+, shadcn, NestJS, Hono…) belong upstream.
+        Report here when **the generator** misbehaves, or when what it generates is wrong.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package?
+      options:
+        - "@pauldvlp/vp-react-ts-shadcn"
+        - "@pauldvlp/vp-react-ts-nestjs"
+        - "@pauldvlp/vp-react-ts-hono"
+        - "@pauldvlp/vp-pkg-shadcn"
+        - "@pauldvlp/create"
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: The version that was generated from — `vp create` prints it, or check the npm dist-tag you used.
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How can we reproduce it?
+      description: The exact command, and the answers you gave to the prompts — the options chosen usually decide which code path ran.
+      placeholder: |
+        1. vp create @pauldvlp/vp-react-ts-shadcn my-app
+        2. Answered: ui = yes, icons = lucide, …
+        3. cd my-app && pnpm install
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS, Node and pnpm versions
+      placeholder: "Ubuntu 24.04 · Node 24.18.0 · pnpm 11.12.0"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      render: shell

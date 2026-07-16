@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a change to a generator, or a new template.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Templates stay deliberately small: they scaffold a working project and get out of
+        the way. Proposals that add options tend to land better than ones that add opinions.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What you're trying to do today, and where the current templates get in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+      description: For a new template, say which stack and why it earns a generator rather than a few manual steps.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered

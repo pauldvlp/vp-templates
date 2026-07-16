@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Monorepo of pauldvlp's Vite+ templates and generators, indexed by @pauldvlp/create.",
-  "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
+  "author": "Paul Barahona <johanpaulbarahona@gmail.com> (https://github.com/pauldvlp/vp-templates)",
   "license": "MIT",
   "homepage": "https://github.com/pauldvlp/vp-templates",
   "repository": {

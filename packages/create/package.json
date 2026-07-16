@@ -2,7 +2,7 @@
   "name": "@pauldvlp/create",
   "version": "0.6.0",
   "description": "pauldvlp's Vite+ project templates, usable via `vp create @pauldvlp`.",
-  "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
+  "author": "Paul Barahona <johanpaulbarahona@gmail.com> (https://github.com/pauldvlp/vp-templates)",
   "license": "MIT",
   "homepage": "https://github.com/pauldvlp/vp-templates",
   "repository": {
