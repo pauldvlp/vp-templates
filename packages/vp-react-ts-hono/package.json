@@ -2,7 +2,7 @@
   "name": "@pauldvlp/vp-react-ts-hono",
   "version": "0.2.3",
   "description": "Vite+ monorepo template: a React web app + a Hono api (conformed to the Vite+ toolchain) sharing Zod contracts.",
-  "author": "pauldvlp (https://github.com/pauldvlp/vp-templates)",
+  "author": "Paul Barahona <johanpaulbarahona@gmail.com> (https://github.com/pauldvlp/vp-templates)",
   "license": "MIT",
   "homepage": "https://github.com/pauldvlp/vp-templates",
   "repository": {
