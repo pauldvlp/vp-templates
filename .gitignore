@@ -10,3 +10,7 @@ dist
 .env
 .env.*
 !.env.example
+
+# claude code local session state (not project source)
+.claude/settings.local.json
+.vscode/

@@ -1,0 +1,42 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # pnpm 11 defaults to minimumReleaseAge: 1440 (24h) and CI enforces it, so a bump
+    # proposed minutes after a release fails `pnpm install --frozen-lockfile` with
+    # ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION. Wait past that window before proposing.
+    cooldown:
+      default-days: 2
+    # `chore`, not the `fix(deps)` the release-please repos use: releases here come from
+    # changeset FILES, never from commit types, so no prefix can cut a version. That has a
+    # consequence worth knowing — a bump to a shipped dependency (e.g. @clack/prompts in the
+    # generators) reaches npm only once someone adds a changeset for it. Dependabot won't.
+    # (Versions inside packages/*/template/** ship too but are invisible to dependabot;
+    # template-install.yml sweeps those against the live registry weekly instead.)
+    commit-message:
+      prefix: chore
+      prefix-development: chore
+      include: scope
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      npm:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    # Let a fresh action release be exercised elsewhere first — a same-day major landed
+    # broken in a sibling repo (pnpm/action-setup@v6 crashed self-installing pnpm 11.12).
+    cooldown:
+      default-days: 2
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns: ["*"]
