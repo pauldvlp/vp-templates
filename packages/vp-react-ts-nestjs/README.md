@@ -36,16 +36,16 @@ vp create @pauldvlp:vp-react-ts-nestjs -- \
 
 ## Options
 
-| Option       | Type / values | Default   | Notes                                                                                          |
-| ------------ | ------------- | --------- | ---------------------------------------------------------------------------------------------- |
-| `--name`     | string        | `my-app`  | Root project / package name.                                                                   |
+| Option       | Type / values | Default   | Notes                                                                                                                                                                                   |
+| ------------ | ------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--name`     | string        | `my-app`  | Root project / package name.                                                                                                                                                            |
 | `--scope`    | string        | `@<name>` | npm scope for workspace packages → `@scope/web`, `@scope/api`, `@scope/contracts`. Defaults to the project name prefixed with `@` (e.g. `--name acme` → `@acme`); falls back to `@app`. |
-| `--apiPort`  | string        | `3000`    | Port the NestJS api listens on (substituted into the env default + the web proxy).             |
-| `--webPort`  | string        | `5173`    | Port the web dev server listens on.                                                            |
-| `--swagger`  | boolean       | `false`   | Expose Swagger UI at `/docs` and the OpenAPI JSON at `/docs.json` (adds `@nestjs/swagger`).     |
-| `--serveWeb` | boolean       | `false`   | Have the api serve the built web app for a single deployable (adds `@nestjs/serve-static`).     |
-| `--docker`   | boolean       | `false`   | Emit a multi-stage `apps/api/Dockerfile` (+ root `.dockerignore`).                              |
-| `--install`  | boolean       | `true`    | Run `pnpm install` after scaffolding. `false` = files only.                                     |
+| `--apiPort`  | string        | `3000`    | Port the NestJS api listens on (substituted into the env default + the web proxy).                                                                                                      |
+| `--webPort`  | string        | `5173`    | Port the web dev server listens on.                                                                                                                                                     |
+| `--swagger`  | boolean       | `false`   | Expose Swagger UI at `/docs` and the OpenAPI JSON at `/docs.json` (adds `@nestjs/swagger`).                                                                                             |
+| `--serveWeb` | boolean       | `false`   | Have the api serve the built web app for a single deployable (adds `@nestjs/serve-static`).                                                                                             |
+| `--docker`   | boolean       | `false`   | Emit a multi-stage `apps/api/Dockerfile` (+ root `.dockerignore`).                                                                                                                      |
+| `--install`  | boolean       | `true`    | Run `pnpm install` after scaffolding. `false` = files only.                                                                                                                             |
 
 ## What it scaffolds
 

@@ -30,7 +30,7 @@ This repo publishes **project generators**. That shapes what counts as a vulnera
 
 **Out of scope**
 
-- Vulnerabilities in the *dependencies a generated project installs* — those belong
+- Vulnerabilities in the _dependencies a generated project installs_ — those belong
   upstream. Templates use version ranges, so a fresh generate pulls the current release;
   `template-install.yml` sweeps them weekly against the live registry.
 - Vulnerabilities in Vite+, shadcn, NestJS, Hono or any other tool a template wires up.

@@ -33,11 +33,11 @@ packages/
 
 ## Naming convention (how it grows)
 
-| Kind                              | Package name             | Manifest entry          | `monorepo` |
-| --------------------------------- | ------------------------ | ----------------------- | ---------- |
-| Full project / monorepo scaffold  | `@pauldvlp/vp-<stack>`   | `vp-<stack>`            | `true`     |
-| Single package into existing repo | `@pauldvlp/vp-pkg-<x>`   | `vp-pkg-<x>` (or alias) | omit       |
-| Pack of packages at once          | `@pauldvlp/vp-pack-<x>`  | `vp-pack-<x>`           | omit       |
+| Kind                              | Package name            | Manifest entry          | `monorepo` |
+| --------------------------------- | ----------------------- | ----------------------- | ---------- |
+| Full project / monorepo scaffold  | `@pauldvlp/vp-<stack>`  | `vp-<stack>`            | `true`     |
+| Single package into existing repo | `@pauldvlp/vp-pkg-<x>`  | `vp-pkg-<x>` (or alias) | omit       |
+| Pack of packages at once          | `@pauldvlp/vp-pack-<x>` | `vp-pack-<x>`           | omit       |
 
 - `monorepo: true` hides the entry when `vp create` runs inside an existing monorepo (new-project
   scaffolds only). Omitting it keeps the entry available inside existing repos — for "add a package"

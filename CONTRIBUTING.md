@@ -44,7 +44,7 @@ Requirements: Node `>=22.18.0`, pnpm `11.9.0`, and the `vp` (Vite+) CLI installe
 - **Title:** use a short, imperative summary (e.g. `feat: add vp-pkg-vue generator`). We loosely
   follow [Conventional Commits](https://www.conventionalcommits.org/) prefixes (`feat`, `fix`,
   `docs`, `chore`, `refactor`, `ci`).
-- **Description:** explain *what* changed and *why*. Link the related issue with `Closes #123`.
+- **Description:** explain _what_ changed and _why_. Link the related issue with `Closes #123`.
 - **Keep PRs small and focused.** Unrelated changes are easier as separate PRs.
 - **Run the checks** in the [PR checklist](#pull-request-checklist) before requesting review.
 - A maintainer will review your PR. Don't worry about bumping versions or publishing — that's handled
@@ -76,7 +76,7 @@ node packages/vp-react-ts-shadcn/dist/index.js \
 `pnpm test` only asserts the in-memory file tree; it never installs, so a bad version in
 `template/**/package.json`, the template's `catalog:`, or `src/template.ts`'s `ICON_LIBS` map slips
 through. `pnpm smoke:install` scaffolds to disk and runs the generator's post-scaffold `pnpm install`
-against the real npm registry — the generated project has no lockfile and uses version *ranges*, so a
+against the real npm registry — the generated project has no lockfile and uses version _ranges_, so a
 fresh install pulls the newest matching release and fails if it's incompatible. Run it on a schedule
 to notice when a dependency ships a breaking version inside an allowed range.
 
@@ -111,7 +111,7 @@ come from Verdaccio; React, shadcn, fonts, etc. still come from the real npm reg
 > local storage (`rm -rf .verdaccio/storage`) or bump the version (see below) before `pnpm publish:local`.
 >
 > **Shortcut:** with the registry running, `pnpm relocal` does the whole reset in one shot — it wipes
-> the `@pauldvlp` packages from Verdaccio storage *and* the consumer-side caches that make `vp create`
+> the `@pauldvlp` packages from Verdaccio storage _and_ the consumer-side caches that make `vp create`
 > reuse a stale copy (`pnpm dlx`, registry metadata, the store links, vp's resolve cache), then rebuilds
 > and republishes every package. Use it so you can re-test the **same** version after each edit without
 > bumping. (Override the registry with `VP_LOCAL_REGISTRY=http://host:port pnpm relocal`.)

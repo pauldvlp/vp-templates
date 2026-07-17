@@ -30,18 +30,18 @@ vp create @pauldvlp:vp-react-ts-shadcn -- \
 
 ## Options
 
-| Option          | Type / values                                              | Default        | Notes                                                                                   |
-| --------------- | ---------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------- |
-| `--name`        | string                                                     | `my-app`       | Root project / package name.                                                            |
-| `--scope`       | string                                                     | `@<name>`      | npm scope for workspace packages → `@scope/website`, `@scope/ui`. Defaults to the project name prefixed with `@` (e.g. `--name acme` → `@acme`); falls back to `@app`. |
-| `--base`        | `radix` \| `base`                                          | `radix`        | shadcn component library (radix-ui or @base-ui). Honored by `shadcn init --base`.       |
-| `--preset`      | style name or code                                         | `b30557okNu`   | A style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) **or** a code from ui.shadcn.com. **Owns** color, fonts, radius, baseColor, menu styling. |
-| `--iconLibrary` | `lucide` \| `hugeicons` \| `radix` \| `tabler`             | `hugeicons`    | Icon library (persists; not part of the preset).                                        |
-| `--cssVariables`| boolean                                                    | `true`         | CSS variables for theming.                                                              |
-| `--rtl`         | boolean                                                    | `false`        | RTL support.                                                                             |
-| `--pointer`     | boolean                                                    | `false`        | Pointer cursor on interactive elements.                                                 |
-| `--components`  | comma list                                                 | `button,badge` | shadcn components to pre-install. `button` + `badge` are always included.               |
-| `--install`     | boolean                                                    | `true`         | Run install + apply the shadcn theme after scaffolding. `false` = files only.           |
+| Option           | Type / values                                  | Default        | Notes                                                                                                                                                                  |
+| ---------------- | ---------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--name`         | string                                         | `my-app`       | Root project / package name.                                                                                                                                           |
+| `--scope`        | string                                         | `@<name>`      | npm scope for workspace packages → `@scope/website`, `@scope/ui`. Defaults to the project name prefixed with `@` (e.g. `--name acme` → `@acme`); falls back to `@app`. |
+| `--base`         | `radix` \| `base`                              | `radix`        | shadcn component library (radix-ui or @base-ui). Honored by `shadcn init --base`.                                                                                      |
+| `--preset`       | style name or code                             | `b30557okNu`   | A style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) **or** a code from ui.shadcn.com. **Owns** color, fonts, radius, baseColor, menu styling.     |
+| `--iconLibrary`  | `lucide` \| `hugeicons` \| `radix` \| `tabler` | `hugeicons`    | Icon library (persists; not part of the preset).                                                                                                                       |
+| `--cssVariables` | boolean                                        | `true`         | CSS variables for theming.                                                                                                                                             |
+| `--rtl`          | boolean                                        | `false`        | RTL support.                                                                                                                                                           |
+| `--pointer`      | boolean                                        | `false`        | Pointer cursor on interactive elements.                                                                                                                                |
+| `--components`   | comma list                                     | `button,badge` | shadcn components to pre-install. `button` + `badge` are always included.                                                                                              |
+| `--install`      | boolean                                        | `true`         | Run install + apply the shadcn theme after scaffolding. `false` = files only.                                                                                          |
 
 ### What the preset controls vs. what you control
 
