@@ -17,6 +17,9 @@
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "test:watch": "vitest",
     "smoke:install": "node scripts/smoke-install.mjs",
     "registry": "verdaccio --config verdaccio.yaml --listen 4873",
@@ -31,6 +34,8 @@
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "husky": "^9.1.7",
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0",
     "verdaccio": "^6.7.4",
     "vitest": "^4"
   },

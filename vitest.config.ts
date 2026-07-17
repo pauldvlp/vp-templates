@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 
 // Fast inner-loop check for the generators: each package's __tests__/ exercises its produce() in
 // memory (no registry, npm install, or shadcn) and asserts the emitted tree, scope/name substitution,
@@ -9,4 +9,4 @@ export default defineConfig({
     include: ['packages/*/__tests__/**/*.test.ts'],
     environment: 'node',
   },
-})
+});

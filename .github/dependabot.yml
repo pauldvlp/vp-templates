@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
@@ -21,14 +21,14 @@ updates:
       prefix-development: chore
       include: scope
     ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
       npm:
-        patterns: ["*"]
+        patterns: ['*']
 
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
     # Let a fresh action release be exercised elsewhere first — a same-day major landed
@@ -39,4 +39,4 @@ updates:
       prefix: ci
     groups:
       github-actions:
-        patterns: ["*"]
+        patterns: ['*']

@@ -1,0 +1,7 @@
+# Freshness checkpoint — @pauldvlp/conventions references/freshness.md
+last_reviewed: 2026-07-17
+# open items (updated as they land):
+# - [done] added oxlint + oxfmt (Vite+ toolchain, aligned to single-quote+semi like the sibling repos);
+#          gated in CI. The template/ payload is excluded from both (it ships as-is).
+# - Node: CI is already all Node 24, no EOL runtime anywhere — nothing to drop.
+# - dependency bumps don't ship without a changeset (changesets repo) — security bumps need a manual changeset.

@@ -47,17 +47,17 @@ defaults to the **surrounding monorepo's scope** (read from the nearest `pnpm-wo
 
 ## Options
 
-| Option          | Type / values                                  | Default        | Notes                                                                                   |
-| --------------- | ---------------------------------------------- | -------------- | --------------------------------------------------------------------------------------- |
-| `--scope`       | string                                         | monorepo scope | npm scope for the package → `@scope/ui`. Defaults to the surrounding monorepo's scope (e.g. `@acme`), `@app` outside a workspace. `@` is added if you omit it. |
-| `--base`        | `radix` \| `base`                              | `radix`        | shadcn component library (radix-ui or @base-ui). Honored by `shadcn init --base`.       |
-| `--preset`      | style name or code                             | `b30557okNu`   | A style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) **or** a code from ui.shadcn.com. **Owns** color, fonts, radius, baseColor, menu styling. |
-| `--iconLibrary` | `lucide` \| `hugeicons` \| `radix` \| `tabler` | `hugeicons`    | Icon library (persists; not part of the preset).                                        |
-| `--cssVariables`| boolean                                        | `true`         | CSS variables for theming.                                                              |
-| `--rtl`         | boolean                                        | `false`        | RTL support.                                                                             |
-| `--pointer`     | boolean                                        | `false`        | Pointer cursor on interactive elements.                                                 |
-| `--components`  | comma list                                     | `button,badge` | shadcn components to pre-install. `button` + `badge` are always included.               |
-| `--install`     | boolean                                        | `true`         | Run install + apply the shadcn theme after scaffolding. `false` = files only.           |
+| Option           | Type / values                                  | Default        | Notes                                                                                                                                                              |
+| ---------------- | ---------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--scope`        | string                                         | monorepo scope | npm scope for the package → `@scope/ui`. Defaults to the surrounding monorepo's scope (e.g. `@acme`), `@app` outside a workspace. `@` is added if you omit it.     |
+| `--base`         | `radix` \| `base`                              | `radix`        | shadcn component library (radix-ui or @base-ui). Honored by `shadcn init --base`.                                                                                  |
+| `--preset`       | style name or code                             | `b30557okNu`   | A style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) **or** a code from ui.shadcn.com. **Owns** color, fonts, radius, baseColor, menu styling. |
+| `--iconLibrary`  | `lucide` \| `hugeicons` \| `radix` \| `tabler` | `hugeicons`    | Icon library (persists; not part of the preset).                                                                                                                   |
+| `--cssVariables` | boolean                                        | `true`         | CSS variables for theming.                                                                                                                                         |
+| `--rtl`          | boolean                                        | `false`        | RTL support.                                                                                                                                                       |
+| `--pointer`      | boolean                                        | `false`        | Pointer cursor on interactive elements.                                                                                                                            |
+| `--components`   | comma list                                     | `button,badge` | shadcn components to pre-install. `button` + `badge` are always included.                                                                                          |
+| `--install`      | boolean                                        | `true`         | Run install + apply the shadcn theme after scaffolding. `false` = files only.                                                                                      |
 
 ## How it scaffolds
 
@@ -95,8 +95,8 @@ pnpm --filter <your-app> add -D @tailwindcss/vite tailwindcss
 
 ```ts
 // apps/<your-app>/vite.config.ts
-import tailwindcss from '@tailwindcss/vite'
-export default defineConfig({ plugins: [/* ...existing */ tailwindcss()] })
+import tailwindcss from '@tailwindcss/vite';
+export default defineConfig({ plugins: [/* ...existing */ tailwindcss()] });
 ```
 
 > `ui`'s `globals.css` already `@source`s `apps/**/*.{ts,tsx}` (and the `ui` package), so Tailwind
@@ -106,8 +106,8 @@ export default defineConfig({ plugins: [/* ...existing */ tailwindcss()] })
 
 ```tsx
 // apps/<your-app>/src/main.tsx
-import '@scope/ui/globals.css'
-import { Button } from '@scope/ui/components/ui/button'
+import '@scope/ui/globals.css';
+import { Button } from '@scope/ui/components/ui/button';
 ```
 
 ## Re-theme later
