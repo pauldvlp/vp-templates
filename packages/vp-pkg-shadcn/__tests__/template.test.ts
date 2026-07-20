@@ -39,4 +39,53 @@ describe('vp-pkg-shadcn', () => {
     expect(uiPkg.scripts.ready).toMatch(/vp test/);
     expect(files.src?.lib?.['cn.test.ts']).toBeTruthy();
   });
+
+  it('bakes the non-default option set (radix base, no css vars, rtl on, hugeicons)', async () => {
+    const files = await produce(template, {
+      scope: '@acme',
+      base: 'radix',
+      preset: 'vega',
+      iconLibrary: 'hugeicons',
+      cssVariables: false,
+      rtl: true,
+      pointer: true,
+      components: 'button',
+      install: true,
+    });
+
+    const cj = JSON.parse(files['components.json']);
+    expect(cj.style).toBe('radix-nova');
+    expect(cj.base).toBe('radix');
+    expect(cj.iconLibrary).toBe('hugeicons');
+    expect(cj.rtl).toBe(true);
+    expect(cj.tailwind.cssVariables).toBe(false);
+
+    const deps = JSON.parse(files['package.json']).dependencies;
+    expect(deps['@hugeicons/react']).toBeTruthy();
+    expect(deps['@hugeicons/core-free-icons']).toBeTruthy();
+    expect(deps['lucide-react']).toBeUndefined();
+  });
+
+  const ICON_DEP: Record<string, string> = {
+    hugeicons: '@hugeicons/react',
+    lucide: 'lucide-react',
+    radix: '@radix-ui/react-icons',
+    tabler: '@tabler/icons-react',
+  };
+  for (const [lib, dep] of Object.entries(ICON_DEP)) {
+    it(`wires the ${lib} icon dependency`, async () => {
+      const files = await produce(template, {
+        scope: '@acme',
+        base: 'base',
+        preset: 'vega',
+        iconLibrary: lib as 'hugeicons' | 'lucide' | 'radix' | 'tabler',
+        cssVariables: true,
+        rtl: false,
+        pointer: false,
+        components: 'button',
+        install: true,
+      });
+      expect(JSON.parse(files['package.json']).dependencies[dep]).toBeTruthy();
+    });
+  }
 });
