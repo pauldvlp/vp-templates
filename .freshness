@@ -1,8 +1,0 @@
-# Freshness checkpoint — @pauldvlp/conventions references/freshness.md
-last_reviewed: 2026-07-19
-# open items (updated as they land):
-# - [done] added oxlint + oxfmt (Vite+ toolchain), gated in CI; template/ payload excluded
-# - [done 2026-07-19] expanded produce() coverage: shadcn/pkg-shadcn now cover the non-default option
-#     set (radix base, css-vars off, rtl on) + every icon library (hugeicons/lucide/radix/tabler). 6→16.
-# - Node: CI is already all Node 24, no EOL runtime anywhere — nothing to drop.
-# - dependency bumps don't ship without a changeset (changesets repo) — security bumps need a manual changeset.
