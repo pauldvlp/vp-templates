@@ -3,6 +3,9 @@ name: Test
 # Fast generator unit tests: runs every package's __tests__/ (Vitest) against its produce() in memory
 # — no registry, npm install, or shadcn. Catches broken scope/name substitution and per-option wiring
 # on every push and PR. The heavier dependency-resolution gate lives in template-install.yml.
+#
+# The `artifact` job below is the counterpart: everything else here inspects the WORKSPACE, and the
+# workspace is not what users install. It packs and installs the real tarballs instead.
 
 on:
   push:
@@ -79,3 +82,38 @@ jobs:
       - run: pnpm typecheck
 
       - run: pnpm test
+
+      # Build is a PR gate, not just a release step. It otherwise ran for the first time at
+      # `prepack` — i.e. inside release.yml, after the Version PR was already merged — so a bundle
+      # that stopped building surfaced at the one moment nothing can be done about it cheaply.
+      - run: pnpm build
+
+  artifact:
+    name: Published artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # pnpm comes from corepack, pinned by `packageManager`. The second setup-node
+      # wires up the store cache, which needs pnpm on PATH already.
+      - run: corepack enable
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Packs each publishable package and installs the resulting tarball into a clean project
+      # outside the workspace. Nothing above this line ever looks at what npm actually ships:
+      # `smoke:install` imports packages/<pkg>/src/template.ts straight out of the workspace, so a
+      # `files` entry, a `bin`, or the dist bundle could all be broken with every other gate green.
+      # Proven, not assumed — emptying the tsconfig `paths` that inlines the private
+      # @pauldvlp/template-kit leaves typecheck, test and build all passing, and only this fails.
+      - run: pnpm smoke:tarball
