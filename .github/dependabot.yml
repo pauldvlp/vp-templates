@@ -20,6 +20,12 @@ updates:
       prefix: chore
       prefix-development: chore
       include: scope
+    # Majors are excluded because in this repo they are never a mechanical bump. Every devDependency
+    # here is part of a gate or the release path — oxlint/oxfmt decide what `pnpm lint`/`format:check`
+    # accept, vitest decides what `pnpm test` even collects, changesets owns publishing — so a major
+    # arrives as a config migration with a green-looking PR, not as a version number. The one bump
+    # that must never wait on that is a security fix, and those are patches/minors, which are NOT
+    # ignored here. Majors are done by hand, one tool at a time, reading its migration notes.
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
