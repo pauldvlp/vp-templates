@@ -23,9 +23,13 @@ updates:
     # Majors are excluded because in this repo they are never a mechanical bump. Every devDependency
     # here is part of a gate or the release path — oxlint/oxfmt decide what `pnpm lint`/`format:check`
     # accept, vitest decides what `pnpm test` even collects, changesets owns publishing — so a major
-    # arrives as a config migration with a green-looking PR, not as a version number. The one bump
-    # that must never wait on that is a security fix, and those are patches/minors, which are NOT
-    # ignored here. Majors are done by hand, one tool at a time, reading its migration notes.
+    # arrives as a config migration with a green-looking PR, not as a version number. Majors are done
+    # by hand, one tool at a time, reading its migration notes.
+    #
+    # This does NOT hold back a security fix, and not merely because those tend to be patches: an
+    # ignore rule is not applied to security updates at all. Dependabot says so in the job log —
+    # `version-update:semver-major - from .github/dependabot.yml (doesn't apply to security update)`
+    # — so a security bump crosses a major if that is what the advisory requires.
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
