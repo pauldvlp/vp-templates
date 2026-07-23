@@ -1,0 +1,121 @@
+name: Toolchain
+
+# Weekly pnpm bump — dependabot's blind spot. It updates dependencies but never the
+# `packageManager` pin, so this repo can sit a year behind on pnpm with every dependency
+# PR green. corepack reads `packageManager`, so moving the pin IS the upgrade.
+#
+# It deliberately does NOT touch `engines.node`. That floor is what consumers of the
+# published packages must run; raising it drops them, so it stays a manual decision. The
+# CI Node (24) is bumped by hand when a new Active LTS lands.
+#
+# CHANGESETS: this repo publishes via changesets, where no commit type releases anything
+# — only a changeset file does. So this PR ships nothing on merge, which is correct: a
+# toolchain pin is not part of the published payload and must not cut a version. Do NOT
+# add a changeset to it.
+#
+# TOKEN: with GITHUB_TOKEN the PR opens but its checks sit in `action_required` until
+# approved by hand. That's why the gates run in-job below — the self-check is the real
+# verification, not the PR's CI. Swap GH_TOKEN for a fine-grained PAT to make it
+# hands-off.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1' # Mondays ~06:17 UTC — off the :00 mark everyone piles onto
+  workflow_dispatch:
+
+concurrency:
+  group: toolchain
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  pnpm:
+    name: Bump pnpm
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - run: corepack enable
+
+      - name: Resolve current vs latest pnpm
+        id: v
+        run: |
+          set -euo pipefail
+          current=$(node -p "require('./package.json').packageManager.split('@')[1]")
+          latest=$(npm view pnpm version)
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest"   >> "$GITHUB_OUTPUT"
+          if [ "$current" = "$latest" ]; then
+            echo "up_to_date=true" >> "$GITHUB_OUTPUT"
+            echo "pnpm $current is current."
+          else
+            echo "up_to_date=false" >> "$GITHUB_OUTPUT"
+            echo "pnpm $current -> $latest"
+          fi
+
+      # A PR from a previous run that hasn't been merged yet would collide on the branch
+      # name and fail the push. Check before doing any work.
+      - name: Skip if a bump PR is already open
+        id: existing
+        if: steps.v.outputs.up_to_date == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          branch="ci/bump-pnpm-${{ steps.v.outputs.latest }}"
+          open=$(gh pr list --head "$branch" --state open --json number --jq 'length')
+          echo "open=$open" >> "$GITHUB_OUTPUT"
+          [ "$open" = "0" ] || echo "PR for $branch is already open — nothing to do."
+
+      - name: Bump the pin and refresh the lockfile
+        if: steps.v.outputs.up_to_date == 'false' && steps.existing.outputs.open == '0'
+        run: |
+          set -euo pipefail
+          corepack use "pnpm@${{ steps.v.outputs.latest }}"
+          pnpm install --lockfile-only
+
+      # The PR's own CI won't run under GITHUB_TOKEN, so prove the bump here instead —
+      # test.yml's gates plus `build`, which test.yml doesn't run (it only happens at
+      # release time, so a pin bump breaking it would surface at the worst moment).
+      # template-install.yml is left out: resolving every template against the live
+      # registry is far too heavy for a weekly pin bump.
+      - name: Verify the bump against the CI gates
+        if: steps.v.outputs.up_to_date == 'false' && steps.existing.outputs.open == '0'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm lint
+          pnpm format:check
+          pnpm typecheck
+          pnpm test
+          pnpm build
+
+      - name: Open the bump PR
+        if: steps.v.outputs.up_to_date == 'false' && steps.existing.outputs.open == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          branch="ci/bump-pnpm-${{ steps.v.outputs.latest }}"
+          git config user.name "Paul Barahona"
+          git config user.email "johanpaulbarahona@gmail.com"
+          git checkout -b "$branch"
+          # `ci:` and no changeset — the pin is toolchain only and ships nothing.
+          git commit -am "ci: bump pnpm ${{ steps.v.outputs.current }} -> ${{ steps.v.outputs.latest }}"
+          git push -u origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "ci: bump pnpm to ${{ steps.v.outputs.latest }}" \
+            --body "Weekly toolchain bump: \`${{ steps.v.outputs.current }}\` -> \`${{ steps.v.outputs.latest }}\`.
+
+          corepack reads \`packageManager\`, so moving the pin is the upgrade. Lockfile refreshed.
+
+          Verified in-job (the PR's own checks won't run until approved): lint, format:check, typecheck, test, build. template-install.yml was not run.
+
+          No changeset, deliberately — a toolchain pin is not part of the published payload. \`engines.node\` untouched."
