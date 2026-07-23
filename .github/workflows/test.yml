@@ -2,15 +2,18 @@ name: Test
 
 # Fast generator unit tests: runs every package's __tests__/ (Vitest) against its produce() in memory
 # — no registry, npm install, or shadcn. Catches broken scope/name substitution and per-option wiring
-# on every push and PR. The heavier dependency-resolution gate lives in template-install.yml.
+# on every PR. The heavier dependency-resolution gate lives in template-install.yml.
 #
 # The `artifact` job below is the counterpart: everything else here inspects the WORKSPACE, and the
 # workspace is not what users install. It packs and installs the real tarballs instead.
+#
+# PR-only, deliberately. main is rebase-only with linear history, and the ruleset requires a PR whose
+# branch is up to date before merging — so the rebase is a fast-forward and the tree that lands on
+# main is byte-identical to the one these jobs just passed. Re-running them on `push: main` bought
+# nothing and tripled the job count of every merge. main is not left ungated: release.yml runs
+# `pnpm test` before it publishes anything.
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
 
 concurrency:
@@ -21,44 +24,13 @@ permissions:
   contents: read
 
 jobs:
-  commitlint:
-    name: Commit messages
-    # The husky hook only protects a local `git commit` — it can be skipped with
-    # --no-verify and never runs for a commit made on github.com. main is rebase-only,
-    # so every commit a PR carries lands verbatim: lint each one here too.
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-
-      - run: corepack enable
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Lint the commits this PR adds
-        run: >-
-          pnpm exec commitlint
-          --from ${{ github.event.pull_request.base.sha }}
-          --to ${{ github.event.pull_request.head.sha }}
-          --verbose
-
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # commitlint below diffs base..head, so it needs the history
 
       - uses: actions/setup-node@v7
         with:
@@ -74,6 +46,17 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # The husky hook only protects a local `git commit` — it can be skipped with --no-verify and
+      # never runs for a commit made on github.com. main is rebase-only, so every commit a PR carries
+      # lands verbatim: lint each one here too. Runs first because it needs nothing built, and a
+      # malformed message should be reported before spending the rest of the job on it.
+      - name: Lint the commits this PR adds
+        run: >-
+          pnpm exec commitlint
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+          --verbose
 
       - run: pnpm lint
 
