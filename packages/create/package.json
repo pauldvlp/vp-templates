@@ -46,5 +46,8 @@
   },
   "files": [
     "package.json"
-  ]
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  }
 }
