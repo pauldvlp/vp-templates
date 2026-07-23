@@ -49,7 +49,10 @@ jobs:
         id: v
         run: |
           set -euo pipefail
-          current=$(node -p "require('./package.json').packageManager.split('@')[1]")
+          # `corepack use` writes the pin as `pnpm@<version>+sha512.<hash>`. Strip anything after the
+          # `+` before comparing: with the hash attached this never equals `npm view pnpm version`,
+          # so the job would report the pin as stale forever and re-open the same PR every week.
+          current=$(node -p "require('./package.json').packageManager.split('@')[1].split('+')[0]")
           latest=$(npm view pnpm version)
           echo "current=$current" >> "$GITHUB_OUTPUT"
           echo "latest=$latest"   >> "$GITHUB_OUTPUT"
@@ -80,13 +83,21 @@ jobs:
         run: |
           set -euo pipefail
           corepack use "pnpm@${{ steps.v.outputs.latest }}"
+          # Normalise the pin back to the bare `pnpm@<version>` this repo keeps in package.json.
+          # corepack appends `+sha512.<hash>`, which is valid but makes the version read above
+          # unparseable-by-eye and drags the hash through every future diff.
+          node -e '
+            const fs = require("fs");
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            pkg.packageManager = "pnpm@${{ steps.v.outputs.latest }}";
+            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");
+          '
           pnpm install --lockfile-only
 
-      # The PR's own CI won't run under GITHUB_TOKEN, so prove the bump here instead —
-      # test.yml's gates plus `build`, which test.yml doesn't run (it only happens at
-      # release time, so a pin bump breaking it would surface at the worst moment).
-      # template-install.yml is left out: resolving every template against the live
-      # registry is far too heavy for a weekly pin bump.
+      # The PR's own CI won't run under GITHUB_TOKEN, so prove the bump here instead — the full
+      # test.yml set, including the tarball smoke, since a pnpm bump is exactly the kind of change
+      # that alters packing. template-install.yml is left out: resolving every template against the
+      # live registry is far too heavy for a weekly pin bump.
       - name: Verify the bump against the CI gates
         if: steps.v.outputs.up_to_date == 'false' && steps.existing.outputs.open == '0'
         run: |
@@ -96,6 +107,8 @@ jobs:
           pnpm typecheck
           pnpm test
           pnpm build
+          # A pnpm bump changes what `pnpm pack` emits, so verify the published tarballs too.
+          pnpm smoke:tarball
 
       - name: Open the bump PR
         if: steps.v.outputs.up_to_date == 'false' && steps.existing.outputs.open == '0'
