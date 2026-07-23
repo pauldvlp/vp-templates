@@ -22,6 +22,7 @@
     "format:check": "oxfmt --check",
     "test:watch": "vitest",
     "smoke:install": "node scripts/smoke-install.mjs",
+    "smoke:tarball": "node scripts/smoke-tarball.mjs",
     "registry": "verdaccio --config verdaccio.yaml --listen 4873",
     "publish:local": "pnpm -r run build && pnpm -r publish --registry http://localhost:4873 --no-git-checks",
     "relocal": "node scripts/relocal.mjs",
