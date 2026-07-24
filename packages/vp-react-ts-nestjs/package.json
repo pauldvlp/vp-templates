@@ -1,6 +1,6 @@
 {
   "name": "@pauldvlp/vp-react-ts-nestjs",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Vite+ monorepo template: a React web app + a NestJS api (conformed to the Vite+ toolchain) sharing Zod contracts.",
   "author": "Paul Barahona <johanpaulbarahona@gmail.com> (https://github.com/pauldvlp/vp-templates)",
   "license": "MIT",

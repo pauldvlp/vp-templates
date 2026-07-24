@@ -1,5 +1,11 @@
 # @pauldvlp/vp-react-ts-hono
 
+## 0.3.1
+
+### Patch Changes
+
+- 6c4d3c8: Fix `spawnSync pnpm ENOENT` on Windows when the generated CLI runs its post-scaffold scripts (`pnpm install`, `pnpm exec shadcn ...`). On Windows, `pnpm`/`npm` are PATH-resolved `.cmd` shims that `execFileSync` cannot spawn without a shell; the runtime now enables `shell: true` on `win32` only, matching the fix already applied to this repo's own install smoke test.
+
 ## 0.3.0
 
 ### Minor Changes
