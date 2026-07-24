@@ -1,5 +1,11 @@
 # @pauldvlp/vp-react-ts-shadcn
 
+## 0.6.4
+
+### Patch Changes
+
+- 7fc8d04: Bump the pnpm pin shipped in the generated project's `devEngines.packageManager` from `11.9.0` to `11.17.0`. This is config for the project a user scaffolds, not this repo's own toolchain, and it had been left behind while the root pin moved twice. `onFail` stays `warn`, so a contributor whose pnpm differs still gets a notice rather than a failed install.
+
 ## 0.6.3
 
 ### Patch Changes
