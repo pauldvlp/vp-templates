@@ -70,6 +70,15 @@ jobs:
       - uses: changesets/action@v1
         with:
           version: pnpm exec changeset version
+          # The action's default commit message and PR title are both a bare "Version Packages", which
+          # is not Conventional Commits — so the husky commit-msg hook (installed by `prepare` on the
+          # install above) rejects the action's `git commit` here, and test.yml's commitlint step would
+          # reject the same commit again when the Version PR runs its checks. Give both a conventional
+          # `chore:` header so the release bookkeeping commit clears every gate. `chore` is right: this
+          # commit only bumps versions + CHANGELOGs, it ships nothing itself — publishing happens after
+          # it merges, via the `publish` step below.
+          commit: 'chore: version packages'
+          title: 'chore: version packages'
           # Publish each public package to npm (OIDC, provenance automatic) and create its git tag +
           # GitHub Release. Runs only once no changesets remain (i.e. after the Version PR is merged).
           # Wrapped in a guard: the action runs this on EVERY no-changeset push (routine test/ci/docs
