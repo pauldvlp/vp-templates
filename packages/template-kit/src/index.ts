@@ -577,8 +577,13 @@ export async function runTemplateCLI<O>(template: TemplateConfig<O>): Promise<nu
       for (const [program, ...commandArgs] of step.commands) {
         if (!program) continue;
         // No shell: the program and each argument are passed literally, so user-derived values
-        // (scope, preset, component names) can never be parsed as shell syntax.
-        execFileSync(program, commandArgs, { cwd: directory, stdio: 'inherit' });
+        // (scope, preset, component names) can never be parsed as shell syntax — except on Windows,
+        // where pnpm/npm are PATH-resolved .cmd shims that execFileSync can't spawn without one.
+        execFileSync(program, commandArgs, {
+          cwd: directory,
+          stdio: 'inherit',
+          shell: process.platform === 'win32',
+        });
       }
     }
   }
