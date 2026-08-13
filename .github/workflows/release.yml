@@ -67,7 +67,7 @@ jobs:
       # Gate: don't publish/tag a broken tree.
       - run: pnpm test
 
-      - uses: changesets/action@v1
+      - uses: changesets/action@v2
         with:
           version: pnpm exec changeset version
           # The action's default commit message and PR title are both a bare "Version Packages", which
